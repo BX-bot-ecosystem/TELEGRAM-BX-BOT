@@ -118,6 +118,7 @@ def get_committee_access(committee_name):
     """
     key = 'access:' + committee_name
     access = r.hgetall(key)
+    print(access)
     return access
 
 def add_one_time_pass(password, committee_name):
@@ -172,3 +173,7 @@ def change_committee_access(committee_name, new_rights):
     """
     commmittee_key = 'access:' + committee_name
     r.hset(commmittee_key, mapping=new_rights)
+
+
+if __name__ == '__main__':
+    pass

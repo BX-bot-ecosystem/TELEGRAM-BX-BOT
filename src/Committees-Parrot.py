@@ -2,8 +2,9 @@ import logging
 import json
 import random
 import string
-from uuid import uuid4
+import datetime
 import telegram.error
+import enum
 
 from utils import db, config, passwords
 
@@ -49,36 +50,55 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
+class Event_handler:
+    def __init__(self):
+        self.active_committee = ''
+        time = datetime.datetime.now()
+        self.month = time.month
+        self.year = time.year
+        self.user_rights = ''
+
+class Activity(enum.Enum):
+    HOME = 1
+    LOGIN = 2
+    VERIFICATION = 3
+    HUB = 4
+    MESSAGE = 5
+    ACCESS = 6
+    RIGHTS = 7
+    APPLY_ROLE = 8
+    CONFIRMATION = 9
+
 class Access_handler:
     def __init__(self):
+        self.state = Activity.ACCESS
         self.active_committee = ''
         self.access_list = []
         self.admins_rights = {}
         self.admin_to_change = ''
         self.role_to_apply = ''
         self.admins_ids = {}
-        self.HOME, self.LOGIN, self.VERIFICATION, self.HUB, self.MESSAGE, self.ACCESS, self.RIGHTS, self.APPLY_ROLE, self.CONFIRMATION = range(9)
         self.user_rights = None
         self.access_handler=ConversationHandler(
             entry_points=[CommandHandler("access", self.access)],
             states={
-                self.ACCESS: [
+                self.state.ACCESS: [
                     CommandHandler("password", self.password),
                     CommandHandler("rights", self.rights)
                 ],
-                self.RIGHTS: [
+                self.state.RIGHTS: [
                     CallbackQueryHandler(self.chose_role)
                 ],
-                self.APPLY_ROLE: [
+                self.state.APPLY_ROLE: [
                     CallbackQueryHandler(self.apply_role)
                 ],
-                self.CONFIRMATION: [
+                self.state.CONFIRMATION: [
                     CallbackQueryHandler(self.confirmation)
                 ]
             },
             fallbacks=[],
             map_to_parent={
-                self.HUB: self.HUB
+                self.state.HUB: self.state.HUB
             }
         )
 
@@ -86,7 +106,7 @@ class Access_handler:
         if not self.user_rights == 'Prez':
             await context.bot.send_message(chat_id=update.effective_chat.id,
                                            text="You don't have access rights for this functionality")
-            return self.HUB
+            return self.state.HUB
         access_granted = db.get_committee_access(self.active_committee)
         roles = ["Prez: All functionalities + access management", "Admin: All functionalities", "Comms: Message functionality", "Events: Events functionality"]
         keys = ['user:' + user_id for user_id in access_granted.keys()]
@@ -100,7 +120,7 @@ class Access_handler:
                                        text="The current users with access are: \n" + '\n'.join(current_admins))
         await context.bot.send_message(chat_id=update.effective_chat.id,
                                        text="Do you want to generate a one-time /password to register a new user or change the current /rights")
-        return self.ACCESS
+        return self.state.ACCESS
     async def password(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         new_password=self.active_committee + ':' + ''.join(random.choices(string.digits + string.ascii_letters, k=10))
         db.add_one_time_pass(new_password, self.active_committee)
@@ -109,14 +129,14 @@ class Access_handler:
                                        parse_mode=ParseMode.HTML)
         await context.bot.send_message(chat_id=update.effective_chat.id,
                                        text=f"This password only has one use, send it to the person you want to give access")
-        return self.HUB
+        return self.state.HUB
     async def rights(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         keyboard = [[InlineKeyboardButton(admin, callback_data=admin)] for admin in self.admins_rights.keys() if admin != update.effective_user.first_name]
         reply_markup = InlineKeyboardMarkup(keyboard)
         await context.bot.send_message(chat_id=update.effective_user.id,
                                        text="Who's right do you want to change?",
                                        reply_markup=reply_markup)
-        return self.RIGHTS
+        return self.state.RIGHTS
     async def chose_role(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Parses the CallbackQuery and updates the message text."""
         query = update.callback_query
@@ -130,7 +150,7 @@ class Access_handler:
         reply_markup = InlineKeyboardMarkup(keyboard)
         await query.edit_message_text(text=f"Which role do you want to assign to {query.data}",
                                       reply_markup=reply_markup)
-        return self.APPLY_ROLE
+        return self.state.APPLY_ROLE
     async def apply_role(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         query = update.callback_query
         await query.answer()
@@ -143,13 +163,13 @@ class Access_handler:
         else:
             await query.edit_message_text(text=f"This will make {self.admin_to_change} {self.role_to_apply}, are you sure?",
                                           reply_markup=reply_markup)
-        return self.CONFIRMATION
+        return self.state.CONFIRMATION
     async def confirmation(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         query = update.callback_query
         await query.answer()
         if query.data == 'False':
             await query.edit_message_text(text="Change of rights cancelled")
-            return self.HUB
+            return self.state.HUB
         if self.role_to_apply == 'Prez':
             self.admins_rights[update.effective_user.first_name] = 'Admin'
             self.user_rights = 'Admin'
@@ -158,18 +178,19 @@ class Access_handler:
             committee_command = [key for key in committees.keys() if committees[key] == self.active_committee][0]
             db.eliminate_access_rights(self.admins_ids[self.admin_to_change], self.active_committee, committee_command)
             await query.edit_message_text(text=f"{self.admin_to_change} has been removed access to this committee hub")
-            return self.HUB
+            return self.state.HUB
         self.admins_rights[self.admin_to_change] = self.role_to_apply
         new_rights = {self.admins_ids[admin]: self.admins_rights[admin] for admin in self.admins_rights.keys()}
         db.change_committee_access(self.active_committee, new_rights)
         await query.edit_message_text(text=f"{self.admin_to_change} has been applied the role of {self.role_to_apply}")
-        return self.HUB
+        return self.state.HUB
 
 class Committee_hub:
     def __init__(self):
         self.active_committee = ''
-        self.HOME, self.LOGIN, self.VERIFICATION, self.HUB, self.MESSAGE, self.ACCESS, self.RIGHTS, self.APPLY_ROLE, self.CONFIRMATION = range(9)
+        self.state = Activity.HUB
         self.access_handler = Access_handler()
+        self.event_handler = Event_handler()
         self.user_rights = None
         hub_handlers = [CommandHandler("subs", self.give_subs),
                         CommandHandler("message", self.message),
@@ -180,17 +201,18 @@ class Committee_hub:
         self.committee_handler=ConversationHandler(
             entry_points=hub_handlers,
             states={
-                self.HUB: hub_handlers,
-                self.MESSAGE: [MessageHandler(filters.TEXT, self.parrot)],
+                self.state.HUB: hub_handlers,
+                self.state.MESSAGE: [MessageHandler(filters.TEXT, self.parrot)],
             },
             fallbacks=[MessageHandler(filters.TEXT, self.hub)],
             map_to_parent={
-                self.HOME: self.HOME
+                self.state.HOME: self.state.HOME
             }
         )
     async def hub(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         self.user_rights = db.get_committee_access(self.active_committee)[str(update.effective_user.id)]
         self.access_handler.user_rights = self.user_rights
+        self.event_handler.user_rights = self.user_rights
         await context.bot.send_message(chat_id=update.effective_user.id,
                                        text=f"You are logged into {self.active_committee} as {self.user_rights}")
         if self.user_rights == 'Prez':
@@ -207,7 +229,7 @@ class Committee_hub:
                                            text="From here you can check your /subs or upload an /event to the google calendar")
         await context.bot.send_message(chat_id=update.effective_chat.id,
                                        text="If you want to access other committee, then /logout")
-        return self.HUB
+        return self.state.HUB
     async def give_subs(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         keys = db.subs_of_committee(self.active_committee)
         users_info = db.get_users_info(keys)
@@ -220,15 +242,15 @@ class Committee_hub:
         if len(names) > 1:
             await context.bot.send_message(chat_id=update.effective_user.id,
                                        text="This is the full list:" + name_list)
-        return self.HUB
+        return self.state.HUB
     async def message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         if self.user_rights == 'Events':
             await context.bot.send_message(chat_id=update.effective_chat.id,
                                            text="You don't have access rights for this functionality")
-            return self.HUB
+            return self.state.HUB
         await context.bot.send_message(chat_id=update.effective_user.id,
                                        text="What message do you wish to send to your subscriptors?")
-        return self.MESSAGE
+        return self.state.MESSAGE
     async def parrot(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         message = update.message.text
         keys = db.subs_of_committee(self.active_committee)
@@ -250,39 +272,39 @@ class Committee_hub:
         if counter > 0:
             await context.bot.send_message(chat_id=update.effective_user.id,
                                            text=f"We also notified {counter} of your users which didn't sign into @SailoreParrotBot")
-        return self.HUB
+        return self.state.HUB
     async def event(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         if self.user_rights == 'Comms':
             await context.bot.send_message(chat_id=update.effective_chat.id,
                                            text="You don't have access rights for this functionality")
-            return self.HUB
+            return self.state.HUB
         await context.bot.send_message(chat_id=update.effective_chat.id,
                                        text="Functionality to be implemented")
     async def logout(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(chat_id=update.effective_user.id,
                                        text="Successful logout")
-        return self.HOME
+        return self.state.HOME
 
 class Committees_Login:
     def __init__(self):
         self.active_committee = ''
-        self.HOME, self.LOGIN, self.VERIFICATION, self.HUB, self.MESSAGE, self.ACCESS, self.RIGHTS, self.APPLY_ROLE, self.CONFIRMATION = range(9)
+        self.state = Activity.HOME
         self.committee_hub = Committee_hub()
         self.access_list = []
         self.login_handler=ConversationHandler(
             entry_points=[MessageHandler(filters.TEXT, self.start)],
             states={
-                self.HOME: [
+                self.state.HOME: [
                     MessageHandler(filters.TEXT, self.start)
                 ],
-                self.LOGIN: [
+                self.state.LOGIN: [
                     CommandHandler("password", self.password_access),
                     MessageHandler(filters.TEXT, self.login)
                 ],
-                self.VERIFICATION: [
+                self.state.VERIFICATION: [
                     MessageHandler(filters.TEXT, self.verify_password)
                 ],
-                self.HUB: [
+                self.state.HUB: [
                     self.committee_hub.committee_handler
                 ]
             },
@@ -307,39 +329,50 @@ class Committees_Login:
                                        text="To gain admin access to a new committee ask your committee head for a one time password")
         await context.bot.send_message(chat_id=update.effective_user.id,
                                        text="Once generated use the command /password to gain access")
-        return self.LOGIN
+        return self.state.LOGIN
     async def login(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         committee = update.message.text
         if committee in self.access_list:
             self.active_committee = committees[committee]
             await context.bot.send_message(chat_id=update.effective_user.id,
                                            text=f"You have successfully logged in")
-            self.committee_hub.active_committee = self.active_committee
-            self.committee_hub.access_handler.active_committee = self.active_committee
+            self.update_hub()
             await self.committee_hub.hub(update, context)
-            return self.HUB
+            return self.state.HUB
         else:
             await context.bot.send_message(chat_id=update.effective_user.id,
                                            text="That is not a valid choice, either you don't have access or it doesn't exist")
-            return self.HOME
+            return self.state.HOME
 
+    def update_hub(self):
+        """
+        Update the info about the committee name in all handlers
+        """
+        self.committee_hub.access_handler.active_committee = self.active_committee
+        self.committee_hub.event_handler.active_committee = self.active_committee
+        self.committee_hub.active_committee = self.active_committee
     async def password_access(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(chat_id=update.effective_chat.id,
                                        text="What is your one time password?")
-        return self.VERIFICATION
+        return self.state.VERIFICATION
 
     async def verify_password(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         password = update.message.text
         committee_name = password.split(':')[0]
-        committee_command = [key for key in committees.keys() if committees[key] == committee_name][0]
+        try:
+            committee_command = [key for key in committees.keys() if committees[key] == committee_name][0]
+        except IndexError:
+            await context.bot.send_message(chat_id=update.effective_chat.id,
+                                           text="Error: either you entered an incorrect password or one has not been generated")
+            return self.state.HOME
         if not db.use_one_time_pass(password, committee_name):
             await context.bot.send_message(chat_id=update.effective_chat.id,
                                            text="Error: either you entered an incorrect password or one has not been generated")
+            return self.state.HOME
         result = db.add_access_rights(update.effective_user, committee_name, committee_command)
         await context.bot.send_message(chat_id=update.effective_chat.id,
                                            text="Your rights have been successfully updated")
-
-        return self.HOME
+        return self.state.HOME
 
 def main() -> None:
     """Run the bot."""

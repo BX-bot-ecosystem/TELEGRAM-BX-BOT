@@ -19,7 +19,6 @@ class Bar:
             ["Yay", "Nay"],
         ]
         self.MARKUP = ReplyKeyboardMarkup(self.REPLY_KEYBOARD, one_time_keyboard=True)
-
         self.committee_name = ".9 Bar"
         self.BOARD_MEMBERS = "\n".join(["Prez: Carlos", "VPrez: Maxime", "Stock: Gabin", "Comms: Alix", "Events: Anahí", "Sked: Johanna", "Bartenders: Arturo, Antoine"])
         self.EXIT, self.HOME, self.SUB, self.UNSUB = range(4)
