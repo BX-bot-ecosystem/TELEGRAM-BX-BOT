@@ -6,7 +6,9 @@ import datetime
 import telegram.error
 import enum
 
-from utils import db, config, passwords
+import telegram_bot_calendar.detailed
+from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
+from utils import db, config, passwords, event
 
 from telegram import __version__ as TG_VER
 try:
@@ -29,7 +31,8 @@ from telegram.ext import (
     ConversationHandler,
     MessageHandler,
     filters,
-    CallbackQueryHandler
+    CallbackQueryHandler,
+    CallbackContext
 )
 
 with open('../credentials.json') as f:
@@ -50,14 +53,6 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
-class Event_handler:
-    def __init__(self):
-        self.active_committee = ''
-        time = datetime.datetime.now()
-        self.month = time.month
-        self.year = time.year
-        self.user_rights = ''
-
 class Activity(enum.Enum):
     HOME = 1
     LOGIN = 2
@@ -67,59 +62,280 @@ class Activity(enum.Enum):
     ACCESS = 6
     RIGHTS = 7
     APPLY_ROLE = 8
-    CONFIRMATION = 9
+    CONFIRMATION_RIGHTS = 9
+    EVENT = 10
+    DATE = 11
+    START_TIME = 12
+    END_TIME = 13
+    NAME = 14
+    SUMMARY = 15
+    CONFIRMATION_EVENT = 16
+
+def create_time_keyboard():
+    keyboard = []
+    hours = [str(i).zfill(2) for i in range(0, 24)]
+
+    for i in range(0, 24, 6):
+        row = []
+        for j in range(6):
+            hour = hours[i + j]
+            row.append(InlineKeyboardButton(hour, callback_data=hour))
+        keyboard.append(row)
+
+    return InlineKeyboardMarkup(keyboard)
+
+def create_minutes_keyboard(hour):
+    keyboard = [[]]
+    times = [hour + ':00', hour + ':15', hour + ':30', hour + ':45']
+    for time in times:
+        keyboard[0].append(InlineKeyboardButton(time, callback_data=time))
+    return InlineKeyboardMarkup(keyboard)
+
+class Right_changer:
+    class State(enum.Enum):
+        USER = 1
+        ROLE = 2
+        CONFIRMATION = 3
+        MORE = 4
+    def __init__(self, user_rights):
+        self.user_rights = user_rights
+        self.active_user = [user for user in user_rights.keys() if user_rights[user] == 'Prez'][0]
+        self.keyboard = [[]]
+        self.state = self.State.USER
+        self.new_user_rights = user_rights
+        self.params = {}
+
+    def build(self):
+        if self.state == self.State.USER:
+            self._build_users()
+        if self.state == self.State.ROLE:
+            self._build_role()
+        if self.state == self.State.CONFIRMATION:
+            self._build_confirmation()
+        if self.state == self.State.MORE:
+            self._build_more()
+
+    def process(self, call_data):
+        # callback = user_role_confirmation_more
+        params = call_data.split('_')
+        params = dict(zip(['user', 'role', 'confirmation', 'more'][:len(params)], params))
+        self.params = params
+        if len(params) == 1:
+            self.state = self.State.ROLE
+            return False, 'role', None
+        elif len(params) == 2:
+            self.state = self.State.CONFIRMATION
+            return False, 'confirm', None
+        elif len(params) == 3:
+            if params['confirmation'] == 'yay':
+                self.new_user_rights[self.params['user']] = self.params['role']
+                if self.params['role'] == 'Prez':
+                    self.new_user_rights[self.active_user] = 'Admin'
+                self.state = self.State.MORE
+                return True, 'more', self.new_user_rights
+            self.state = self.State.MORE
+            return False, 'more', None
+        elif len(params) == 4:
+            if params['more'] == 'yay':
+                self.user_rights = self.new_user_rights
+                self.state = self.State.USER
+                return True, 'user', None
+            return False, 'user', None
+
+    def _build_users(self):
+        user_list = [[user] for user in self.user_rights.keys() if user != self.active_user]
+        self.keyboard = self._build_keyboard(user_list)
+
+    def _build_role(self):
+        roles = [['Prez'], ['Admin'], ['Comms'], ['Events'], ['None']]
+        self.keyboard = self._build_keyboard(roles)
+
+    def _build_confirmation(self):
+        confirmation = [['yay', 'nay']]
+        self.keyboard = self._build_keyboard(confirmation)
+
+    def _build_more(self):
+        more = [['yay', 'nay']]
+        self.keyboard = self._build_keyboard(more)
+
+    def _build_keyboard(self, elements):
+        keyboard = []
+        for i, row in enumerate(elements):
+            keyboard.append([])
+            for element in row:
+                callback = self._build_callback(element)
+                keyboard[i].append(InlineKeyboardButton(element, callback_data=callback))
+        return InlineKeyboardMarkup(keyboard)
+
+    def _build_callback(self, element):
+        if self.state == self.State.USER:
+            return element
+        if self.state == self.State.ROLE:
+            return f'{self.params["user"]}_{element}'
+        if self.state == self.State.CONFIRMATION:
+            return f'{self.params["user"]}_{self.params["role"]}_{element}'
+        if self.state == self.State.MORE:
+            return f'{self.params["user"]}_{self.params["role"]}_{self.params["confirmation"]}_{element}'
+
+class Event_handler:
+    def __init__(self, active_committee):
+        self.state = Activity.EVENT
+        self.active_committee = active_committee
+        self.date = ''
+        self.start_time = ''
+        self.end_time = ''
+        self.name = ''
+        self.user_rights = ''
+        self.description = ''
+        self.event_description = ''
+        self.time_markup = create_time_keyboard()
+        self.event_handler = ConversationHandler(
+            entry_points=[CommandHandler("event", self.event)],
+            states={
+                self.state.EVENT: [CallbackQueryHandler(self.event)],
+                self.state.DATE: [CallbackQueryHandler(self.date_selection)],
+                self.state.START_TIME: [CallbackQueryHandler(self.select_start)],
+                self.state.END_TIME: [CallbackQueryHandler(self.select_end)],
+                self.state.NAME: [MessageHandler(filters.TEXT, self.naming)],
+                self.state.SUMMARY: [MessageHandler(filters.TEXT, self.summary)],
+                self.state.CONFIRMATION_EVENT: [CallbackQueryHandler(self.confirmation)]
+            },
+            fallbacks=[MessageHandler(filters.TEXT, self.back)],
+            map_to_parent={
+                self.state.HUB: self.state.HUB,
+            }
+        )
+    async def back(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        await context.bot.send_message(chat_id=update.effective_chat.id,
+                                       text="You are back to the hub")
+        return self.state.HUB
+
+    async def event(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        if self.user_rights == 'Comms':
+            await context.bot.send_message(chat_id=update.effective_chat.id,
+                                           text="You don't have access rights for this functionality")
+            return self.state.HUB
+        Calendar_Object = DetailedTelegramCalendar()
+        Calendar_Object.first_step = 'm'
+        calendar, step = Calendar_Object.build()
+
+        await context.bot.send_message(chat_id=update.effective_user.id,
+                                       text="When do you want to create an event?",
+                                       reply_markup=calendar)
+        return self.state.DATE
+
+    async def date_selection(self, update: Update, context: CallbackContext):
+        query = update.callback_query
+        data = query.data
+
+        result, key, step = DetailedTelegramCalendar().process(data)
+
+        if not result and key:
+            await query.edit_message_text(f"Select {LSTEP[step]}", reply_markup=key)
+            context.user_data["step"] = step  # Update the step in user_data
+            return self.state.DATE
+        elif result:
+            await query.edit_message_text(f"You selected the date {result}")
+            self.date = result
+            await context.bot.send_message(chat_id=update.effective_chat.id,
+                                           text="What time does your event start?",
+                                           reply_markup=self.time_markup)
+            return self.state.START_TIME
+
+    async def select_start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        response = update.message.text
+
+        await context.bot.send_message(chat_id=update.effective_chat.id,
+                                       text="What time does it end?",
+                                       reply_markup=self.time_markup)
+        return self.state.END_TIME
+
+    async def select_end(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        response = update.message.text
+        if len(response.split()) != 2:
+            await context.bot.send_message(chat_id=update.effective_chat.id,
+                                           text="Incorrect format, when inputting the hour use the format: hh mm")
+            return self.state.END_TIME
+
+        self.end_time = response.split()
+        await context.bot.send_message(chat_id=update.effective_chat.id,
+                                       text="Give it a name")
+        return self.state.NAME
+
+    async def naming(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.name = update.message.text
+        await context.bot.send_message(chat_id=update.effective_chat.id,
+                                   text="Give a brief description of your event")
+        return self.state.SUMMARY
+
+    async def summary(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.description = update.message.text
+        formatted_date = event.format_date(self.date)
+        self.event_description = f"{self.active_committee} is organizing <b>{self.name}</b> on the {formatted_date}\n {self.description}"
+        await context.bot.send_message(chat_id=update.effective_chat.id,
+                                       text=f"Current Event:\n {self.event_description}",
+                                       reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton('yay', callback_data='True'), InlineKeyboardButton('nay', callback_data='False')]]),
+                                       parse_mode=ParseMode.HTML)
+        return self.state.CONFIRMATION_EVENT
+
+    async def confirmation(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        query = update.callback_query
+        await query.answer()
+        if query.data == 'False':
+            await query.edit_message_text(text="Event upload cancelled")
+            return self.state.HUB
+        await query.edit_message_text(text=f"The event has been uploaded to the google calendar, users will be able to see it on your committee part of SailoreBXBot two weeks prior to the event")
+        event.create_event(self.date, self.start_time, self.end_time, self.active_committee, self.description)
+        return self.state.HUB
+
 
 class Access_handler:
-    def __init__(self):
+    def __init__(self, active_committee):
+        self.active_committee = active_committee
+        access_granted = db.get_committee_access(self.active_committee)
+        keys = ['user:' + user_id for user_id in access_granted.keys()]
+        admins_info = db.get_users_info(keys)
+        self.admins_rights = {admin['name']: access_granted[admin['id']] for admin in admins_info}
+        self.admins_ids = {admin['name']: admin['id'] for admin in admins_info}
         self.state = Activity.ACCESS
-        self.active_committee = ''
         self.access_list = []
-        self.admins_rights = {}
-        self.admin_to_change = ''
-        self.role_to_apply = ''
-        self.admins_ids = {}
         self.user_rights = None
+        self.right_changer = Right_changer(self.admins_rights)
         self.access_handler=ConversationHandler(
             entry_points=[CommandHandler("access", self.access)],
             states={
                 self.state.ACCESS: [
                     CommandHandler("password", self.password),
-                    CommandHandler("rights", self.rights)
+                    CommandHandler("rights", self.rights),
+                    CommandHandler("back", self.back)
                 ],
                 self.state.RIGHTS: [
                     CallbackQueryHandler(self.chose_role)
                 ],
-                self.state.APPLY_ROLE: [
-                    CallbackQueryHandler(self.apply_role)
-                ],
-                self.state.CONFIRMATION: [
-                    CallbackQueryHandler(self.confirmation)
-                ]
             },
-            fallbacks=[],
+            fallbacks=[MessageHandler(filters.TEXT, self.access)],
             map_to_parent={
                 self.state.HUB: self.state.HUB
             }
         )
 
+    async def back(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        await context.bot.send_message(chat_id=update.effective_chat.id,
+                                       text="You are back to the hub")
+        return self.state.HUB
     async def access(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not self.user_rights == 'Prez':
             await context.bot.send_message(chat_id=update.effective_chat.id,
                                            text="You don't have access rights for this functionality")
             return self.state.HUB
-        access_granted = db.get_committee_access(self.active_committee)
         roles = ["Prez: All functionalities + access management", "Admin: All functionalities", "Comms: Message functionality", "Events: Events functionality"]
-        keys = ['user:' + user_id for user_id in access_granted.keys()]
-        admins_info = db.get_users_info(keys)
-        self.admins_rights = {admin['name']: access_granted[admin['id']] for admin in admins_info}
-        self.admins_ids = {admin['name']: admin['id'] for admin in admins_info}
-        current_admins = [f"{admin['name']}: {access_granted[admin['id']]}" for admin in admins_info]
+        current_admins = [f"{key}: {value}" for key, value in self.admins_rights.items()]
         await context.bot.send_message(chat_id=update.effective_chat.id,
                                        text="Inside any committee hub the following roles are allowed: \n" + '\n'.join(roles))
         await context.bot.send_message(chat_id=update.effective_chat.id,
                                        text="The current users with access are: \n" + '\n'.join(current_admins))
         await context.bot.send_message(chat_id=update.effective_chat.id,
-                                       text="Do you want to generate a one-time /password to register a new user or change the current /rights")
+                                       text="Do you want to generate a one-time /password to register a new user or change the current /rights (you can also go /back to the hub)")
         return self.state.ACCESS
     async def password(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         new_password=self.active_committee + ':' + ''.join(random.choices(string.digits + string.ascii_letters, k=10))
@@ -131,70 +347,50 @@ class Access_handler:
                                        text=f"This password only has one use, send it to the person you want to give access")
         return self.state.HUB
     async def rights(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        keyboard = [[InlineKeyboardButton(admin, callback_data=admin)] for admin in self.admins_rights.keys() if admin != update.effective_user.first_name]
-        reply_markup = InlineKeyboardMarkup(keyboard)
+        self.right_changer = Right_changer(self.admins_rights)
+        self.right_changer.build()
+        keyboard = self.right_changer.keyboard
         await context.bot.send_message(chat_id=update.effective_user.id,
                                        text="Who's right do you want to change?",
-                                       reply_markup=reply_markup)
+                                       reply_markup=keyboard)
         return self.state.RIGHTS
     async def chose_role(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Parses the CallbackQuery and updates the message text."""
         query = update.callback_query
-
-        # CallbackQueries need to be answered, even if no notification to the user is needed
-        # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
         await query.answer()
-        self.admin_to_change = query.data
-        roles = ['Prez', 'Admin', 'Comms', 'Events', 'None']
-        keyboard = [[InlineKeyboardButton(role, callback_data=role)] for role in roles]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.edit_message_text(text=f"Which role do you want to assign to {query.data}",
-                                      reply_markup=reply_markup)
-        return self.state.APPLY_ROLE
-    async def apply_role(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        query = update.callback_query
-        await query.answer()
-        self.role_to_apply = query.data
-        keyboard = [[InlineKeyboardButton('yay', callback_data='True'), InlineKeyboardButton('nay', callback_data='False')]]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        if self.role_to_apply == 'Prez':
-            await query.edit_message_text(text=f"This will make {self.admin_to_change} Prez and it will remove your rights, are you sure?",
-                                          reply_markup=reply_markup)
-        else:
-            await query.edit_message_text(text=f"This will make {self.admin_to_change} {self.role_to_apply}, are you sure?",
-                                          reply_markup=reply_markup)
-        return self.state.CONFIRMATION
-    async def confirmation(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        query = update.callback_query
-        await query.answer()
-        if query.data == 'False':
-            await query.edit_message_text(text="Change of rights cancelled")
+        data = query.data
+        result, state, rights = self.right_changer.process(data)
+        if result and state=='more':
+            #save the changes
+            self.admins_rights = self.right_changer.new_user_rights
+        if not result and state=='user':
+            if 'None' in self.admins_rights.values():
+                users_to_eliminate = [user for user in self.admins_rights.keys() if self.admins_rights[user] == 'None']
+                for user in users_to_eliminate:
+                    del self.admins_rights[user]
+                    committee_command = [key for key in committees.keys() if committees[key] == self.active_committee][0]
+                    db.eliminate_access_rights(self.admins_ids[user], self.active_committee, committee_command)
+            new_rights = {self.admins_ids[admin]: self.admins_rights[admin] for admin in self.admins_rights.keys()}
+            db.change_committee_access(self.active_committee, new_rights)
+            await query.edit_message_text(text="The rights have been updated accordingly")
             return self.state.HUB
-        if self.role_to_apply == 'Prez':
-            self.admins_rights[update.effective_user.first_name] = 'Admin'
-            self.user_rights = 'Admin'
-        if self.role_to_apply == 'None':
-            del self.admins_rights[self.admin_to_change]
-            committee_command = [key for key in committees.keys() if committees[key] == self.active_committee][0]
-            db.eliminate_access_rights(self.admins_ids[self.admin_to_change], self.active_committee, committee_command)
-            await query.edit_message_text(text=f"{self.admin_to_change} has been removed access to this committee hub")
-            return self.state.HUB
-        self.admins_rights[self.admin_to_change] = self.role_to_apply
-        new_rights = {self.admins_ids[admin]: self.admins_rights[admin] for admin in self.admins_rights.keys()}
-        db.change_committee_access(self.active_committee, new_rights)
-        await query.edit_message_text(text=f"{self.admin_to_change} has been applied the role of {self.role_to_apply}")
-        return self.state.HUB
+        self.right_changer.build()
+        keyboard = self.right_changer.keyboard
+        params = data.split('_')
+        message = {'user': "Who's right do you want to change?", 'role': "Which role do you want to apply? \n (Selecting Prez will change your role to Admin)", 'confirm': f"Confirm the change of {params[0]} to {params[-1]}", 'more': "Do you want to make any other changes"}
+        await query.edit_message_text(text=message[state], reply_markup=keyboard)
+        return self.state.RIGHTS
 
 class Committee_hub:
-    def __init__(self):
-        self.active_committee = ''
+    def __init__(self, active_committee):
+        self.active_committee = active_committee
         self.state = Activity.HUB
-        self.access_handler = Access_handler()
-        self.event_handler = Event_handler()
+        self.access_handler = Access_handler(active_committee)
+        self.event_handler = Event_handler(active_committee)
         self.user_rights = None
         hub_handlers = [CommandHandler("subs", self.give_subs),
                         CommandHandler("message", self.message),
-                        CommandHandler("event", self.event),
+                        self.event_handler.event_handler,
                         self.access_handler.access_handler,
                         CommandHandler("logout", self.logout),
                         MessageHandler(filters.TEXT, self.hub)]
@@ -289,7 +485,7 @@ class Committees_Login:
     def __init__(self):
         self.active_committee = ''
         self.state = Activity.HOME
-        self.committee_hub = Committee_hub()
+        self.committee_hub = ''
         self.access_list = []
         self.login_handler=ConversationHandler(
             entry_points=[MessageHandler(filters.TEXT, self.start)],
@@ -305,7 +501,7 @@ class Committees_Login:
                     MessageHandler(filters.TEXT, self.verify_password)
                 ],
                 self.state.HUB: [
-                    self.committee_hub.committee_handler
+
                 ]
             },
             fallbacks=[MessageHandler(filters.TEXT, self.start)]
@@ -348,9 +544,8 @@ class Committees_Login:
         """
         Update the info about the committee name in all handlers
         """
-        self.committee_hub.access_handler.active_committee = self.active_committee
-        self.committee_hub.event_handler.active_committee = self.active_committee
-        self.committee_hub.active_committee = self.active_committee
+        self.committee_hub = Committee_hub(self.active_committee)
+        self.login_handler.states[self.state.HUB] = [self.committee_hub.committee_handler]
     async def password_access(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(chat_id=update.effective_chat.id,
                                        text="What is your one time password?")

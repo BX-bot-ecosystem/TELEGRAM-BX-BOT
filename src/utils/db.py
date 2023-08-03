@@ -118,7 +118,6 @@ def get_committee_access(committee_name):
     """
     key = 'access:' + committee_name
     access = r.hgetall(key)
-    print(access)
     return access
 
 def add_one_time_pass(password, committee_name):
@@ -149,7 +148,7 @@ def add_access_rights(user, committee_name, committee_command):
     committee_key = 'access:' + committee_name
     p = r.pipeline()
     p.hset(user_to_key(user), key="rights", value=updated_access)
-    p.hset(committee_key, key=user.id, value="admin")
+    p.hset(committee_key, key=user.id, value="Admin")
     p.execute()
 
 def eliminate_access_rights(id, committee_name, committee_command):

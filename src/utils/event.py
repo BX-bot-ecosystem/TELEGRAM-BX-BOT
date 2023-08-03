@@ -1,5 +1,6 @@
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
+from datetime import datetime
 import json
 from utils import config
 
@@ -18,15 +19,45 @@ def get_calendar_service():
     service = build("calendar", "v3", credentials=credentials)
     return service
 
-def timeFormat(date, startTime):
-    return "2023" + '-' + date["month"] + '-' + date["day"] + 'T' +
+def format_date(date_obj):
+    # Get the day of the week (e.g., Monday, Tuesday, etc.)
+    day_of_week = date_obj.strftime("%A")
 
-def create_event(service, date, startTime, endTime, color, committee, description):
+    # Get the day of the month with suffix (e.g., 1st, 2nd, 3rd, 4th, etc.)
+    day_of_month = date_obj.strftime("%d")
+    day_of_month = day_of_month if day_of_month[0] != '0' else day_of_month[1]
+    suffix = "th" if 11 <= int(day_of_month) % 100 <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(int(day_of_month) % 10, "th")
+
+    # Get the month (e.g., January, February, etc.)
+    month = date_obj.strftime("%B")
+
+    # Combine the parts to create the formatted date string
+    formatted_date = f"{day_of_week} {day_of_month}{suffix} of {month}"
+
+    return formatted_date
+
+def timeFormat(date, time):
+
+    return str(date) + 'T' + time[0] + ':' + time[1] + ':00'
+
+def create_event(date, startTime, endTime, committee, description):
+    service = get_calendar_service()
     event_data={
         "summary": description,
         "start": {
-            "dateTime": timeFormat(date, startTime)
-        }
+            "dateTime": timeFormat(date, startTime),
+            "timeZone": "Europe/Paris",
+        },
+        "end": {
+            "dateTime": timeFormat(date, endTime),
+            "timeZone": "Europe/Paris",
+        },
+        "extendedProperties": {
+            "shared": {
+                "committee": committee
+            }
+        },
+        "colorId": color_from_committee(committee)
     }
     # Use the service to create an event in the shared calendar.
     event = service.events().insert(calendarId=calendar_id, body=event_data).execute()
@@ -37,24 +68,6 @@ def get_events(service):
     events_result = service.events().list(calendarId=calendar_id, maxResults=10).execute()
     events = events_result.get("items", [])
     return events
-
-event_data = {
-        "summary": "Color Id 2",
-        "start": {
-            "dateTime": "2023-08-1T15:00:00",
-            "timeZone": "Europe/Paris",  # Replace with the timezone of the event's start time.
-        },
-        "end": {
-            "dateTime": "2023-08-1T17:00:00",
-            "timeZone": "Europe/Paris",  # Replace with the timezone of the event's end time.
-        },
-        "extendedProperties": {
-            "shared": {
-                "committee": ".9 Bar"
-            }
-        },
-    "colorId": '11'
-    }
 
 COLOR_ID = {'Lavender': '1',
           'Sage': '2',
@@ -70,5 +83,12 @@ COLOR_ID = {'Lavender': '1',
           }
 
 
-
-create_event(get_calendar_service(), event_data=event_data)
+def color_from_committee(committee_name):
+    """
+    A simple hash from the committee_name to a number from 0 to 11 which represents the color of the event in the calendar
+    """
+    value = 0
+    for character in committee_name:
+        value += ord(character)
+    colorID = value%12
+    return str(colorID)
