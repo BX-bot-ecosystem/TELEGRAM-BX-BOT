@@ -2,13 +2,11 @@ import logging
 import json
 import random
 import string
-import datetime
 import telegram.error
 import enum
 
-import telegram_bot_calendar.detailed
-from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
-from utils import db, config, passwords, event
+from telegram_bot_calendar import WYearTelegramCalendar, LSTEP
+from utils import db, event
 
 from telegram import __version__ as TG_VER
 try:
@@ -70,27 +68,6 @@ class Activity(enum.Enum):
     NAME = 14
     SUMMARY = 15
     CONFIRMATION_EVENT = 16
-
-def create_time_keyboard():
-    keyboard = []
-    hours = [str(i).zfill(2) for i in range(0, 24)]
-
-    for i in range(0, 24, 6):
-        row = []
-        for j in range(6):
-            hour = hours[i + j]
-            row.append(InlineKeyboardButton(hour, callback_data=hour))
-        keyboard.append(row)
-
-    return InlineKeyboardMarkup(keyboard)
-
-def create_minutes_keyboard(hour):
-    keyboard = [[]]
-    times = [hour + ':00', hour + ':15', hour + ':30', hour + ':45']
-    for time in times:
-        keyboard[0].append(InlineKeyboardButton(time, callback_data=time))
-    return InlineKeyboardMarkup(keyboard)
-
 class Right_changer:
     class State(enum.Enum):
         USER = 1
@@ -100,7 +77,7 @@ class Right_changer:
     def __init__(self, user_rights):
         self.user_rights = user_rights
         self.active_user = [user for user in user_rights.keys() if user_rights[user] == 'Prez'][0]
-        self.keyboard = [[]]
+        self.keyboard = InlineKeyboardMarkup([[]])
         self.state = self.State.USER
         self.new_user_rights = user_rights
         self.params = {}
@@ -177,6 +154,53 @@ class Right_changer:
         if self.state == self.State.MORE:
             return f'{self.params["user"]}_{self.params["role"]}_{self.params["confirmation"]}_{element}'
 
+class time_picker:
+    class State(enum.Enum):
+        HOUR = 1
+        MINUTES = 2
+    def __init__(self):
+        self.hour = None
+        self.keyboard = InlineKeyboardMarkup([[]])
+        self.state = self.State.HOUR
+
+    def build(self):
+        if self.state == self.State.HOUR:
+            self.create_hours_keyboard()
+        if self.state == self.State.MINUTES:
+            self.create_minutes_keyboard()
+
+    def process(self, data):
+        if self.hour is None:
+            self.hour = data
+            self.state = self.State.MINUTES
+            return False, None
+        else:
+            self.hour = None
+            self.state = self.State.HOUR
+            return True, data
+
+
+    def create_minutes_keyboard(self):
+        keyboard = [[]]
+        hour = self.hour
+        times = [hour + ':00', hour + ':15', hour + ':30', hour + ':45']
+        for time in times:
+            keyboard[0].append(InlineKeyboardButton(time, callback_data=time))
+        self.keyboard = InlineKeyboardMarkup(keyboard)
+
+    def create_hours_keyboard(self):
+        keyboard = []
+        hours = [str(i).zfill(2) for i in range(0, 24)]
+
+        for i in range(0, 24, 6):
+            row = []
+            for j in range(6):
+                hour = hours[i + j]
+                row.append(InlineKeyboardButton(hour, callback_data=hour))
+            keyboard.append(row)
+        self.keyboard = InlineKeyboardMarkup(keyboard)
+
+
 class Event_handler:
     def __init__(self, active_committee):
         self.state = Activity.EVENT
@@ -188,7 +212,7 @@ class Event_handler:
         self.user_rights = ''
         self.description = ''
         self.event_description = ''
-        self.time_markup = create_time_keyboard()
+        self.time_picker = time_picker()
         self.event_handler = ConversationHandler(
             entry_points=[CommandHandler("event", self.event)],
             states={
@@ -215,9 +239,7 @@ class Event_handler:
             await context.bot.send_message(chat_id=update.effective_chat.id,
                                            text="You don't have access rights for this functionality")
             return self.state.HUB
-        Calendar_Object = DetailedTelegramCalendar()
-        Calendar_Object.first_step = 'm'
-        calendar, step = Calendar_Object.build()
+        calendar, step = WYearTelegramCalendar().build()
 
         await context.bot.send_message(chat_id=update.effective_user.id,
                                        text="When do you want to create an event?",
@@ -228,7 +250,7 @@ class Event_handler:
         query = update.callback_query
         data = query.data
 
-        result, key, step = DetailedTelegramCalendar().process(data)
+        result, key, step = WYearTelegramCalendar().process(data)
 
         if not result and key:
             await query.edit_message_text(f"Select {LSTEP[step]}", reply_markup=key)
@@ -237,27 +259,40 @@ class Event_handler:
         elif result:
             await query.edit_message_text(f"You selected the date {result}")
             self.date = result
+            self.time_picker.build()
+
             await context.bot.send_message(chat_id=update.effective_chat.id,
-                                           text="What time does your event start?",
-                                           reply_markup=self.time_markup)
+                                           text="At what time does your event start?",
+                                           reply_markup=self.time_picker.keyboard)
             return self.state.START_TIME
 
     async def select_start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        response = update.message.text
-
+        query = update.callback_query
+        await query.answer()
+        key, result = self.time_picker.process(query.data)
+        self.time_picker.build()
+        if result is None:
+            await query.edit_message_text(text='At what time does your event start?',
+                                          reply_markup=self.time_picker.keyboard)
+            return self.state.START_TIME
+        self.start_time = result
+        await query.edit_message_text(text=f'Selected {self.start_time}')
         await context.bot.send_message(chat_id=update.effective_chat.id,
-                                       text="What time does it end?",
-                                       reply_markup=self.time_markup)
+                                       text="When does it end?",
+                                       reply_markup=self.time_picker.keyboard)
         return self.state.END_TIME
 
     async def select_end(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        response = update.message.text
-        if len(response.split()) != 2:
-            await context.bot.send_message(chat_id=update.effective_chat.id,
-                                           text="Incorrect format, when inputting the hour use the format: hh mm")
+        query = update.callback_query
+        await query.answer()
+        key, result = self.time_picker.process(query.data)
+        self.time_picker.build()
+        if result is None:
+            await query.edit_message_text(text='When does it end?',
+                                          reply_markup=self.time_picker.keyboard)
             return self.state.END_TIME
-
-        self.end_time = response.split()
+        self.end_time = result
+        await query.edit_message_text(text=f'Selected {self.end_time}')
         await context.bot.send_message(chat_id=update.effective_chat.id,
                                        text="Give it a name")
         return self.state.NAME
@@ -285,7 +320,7 @@ class Event_handler:
             await query.edit_message_text(text="Event upload cancelled")
             return self.state.HUB
         await query.edit_message_text(text=f"The event has been uploaded to the google calendar, users will be able to see it on your committee part of SailoreBXBot two weeks prior to the event")
-        event.create_event(self.date, self.start_time, self.end_time, self.active_committee, self.description)
+        event.create_event(self.date, self.start_time, self.end_time, self.active_committee, self.name, self.description)
         return self.state.HUB
 
 

@@ -3,6 +3,7 @@ from googleapiclient.discovery import build
 from datetime import datetime
 import json
 from utils import config
+import datetime
 
 with open(config.ROOT + '/credentials.json') as f:
     calendar_id = json.load(f)["calendar id"]
@@ -38,12 +39,13 @@ def format_date(date_obj):
 
 def timeFormat(date, time):
 
-    return str(date) + 'T' + time[0] + ':' + time[1] + ':00'
+    return str(date) + 'T' + time + ':00'
 
-def create_event(date, startTime, endTime, committee, description):
+def create_event(date, startTime, endTime, committee, name, description):
     service = get_calendar_service()
     event_data={
-        "summary": description,
+        "summary": name,
+        "description": description,
         "start": {
             "dateTime": timeFormat(date, startTime),
             "timeZone": "Europe/Paris",
@@ -63,12 +65,30 @@ def create_event(date, startTime, endTime, committee, description):
     event = service.events().insert(calendarId=calendar_id, body=event_data).execute()
     return event
 
-def get_events(service):
+def get_events():
+    service = get_calendar_service()
     # Use the service to retrieve events from the shared calendar.
-    events_result = service.events().list(calendarId=calendar_id, maxResults=10).execute()
+    events_result = service.events().list(calendarId=calendar_id).execute()
     events = events_result.get("items", [])
     return events
 
+def get_committee_events(committee, time_max=None):
+    """
+    Gets the events created by a given committee, if a max_time is given events are limited to that time
+    """
+    service = get_calendar_service()
+    now = datetime.datetime.utcnow()
+    time_min = now.isoformat() + 'Z'
+    query_params = {}
+    if time_max is not None:
+        query_params['timeMax'] = time_max
+    events_result = service.events().list(calendarId=calendar_id, timeMin=time_min, **query_params).execute()
+    committee_events = [
+        event for event in events_result['items']
+        if event.get('extendedProperties', {}).get('shared', {}).get('committee') == committee
+    ]
+    return committee_events
+print(len(get_committee_events('.9 Bar')))
 COLOR_ID = {'Lavender': '1',
           'Sage': '2',
           'Grape':'3',

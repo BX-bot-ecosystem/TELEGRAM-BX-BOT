@@ -10,9 +10,8 @@ Template:
 - Attribute that keeps track of where you are in a given flow structure
 
 Events:
-- Time format better with hh:mm easier to type
 - Possibility for event to start one day and finish another (ask if its the next day)
-- Event start selection in months
-- Change hour selection to querys instead of messages
+- Possibility to see all events planned by the committee and allow to delete them
+- Create system to retrieve the events from an specific committee, and in an specific timeframe
 
 Check error when not fulfilling some flow of the access handler or event handler (not possibility of continuing interaction)
