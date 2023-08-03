@@ -4,13 +4,15 @@ There is going to be another bot for the communications, which will take the cha
 
 Allow committee heads to get the list of their subscribers through the bot rather than through Google sheets may be useful for gem handling either way
 
-Subscriptions:
-- Store the subscribers in a json file, use as key the chat id and have as value another dictionary with more information
-- Allow committees to check their number of members through another or the initial bot
-- Allow committees to send communications through another bot to their subscribers
-- Having multiple users simultaneously update the json files will make it so that some of the registries aren't added
+Template:
+- Have one function which gets its interactions from the redis database
+- To create a flow when a given command its given the answers are reached through another instance of the redis database
+- Attribute that keeps track of where you are in a given flow structure
 
-Committees management:
-- Handling subscribers that didn't interact with the parrot bot
-- Communication between bots so that one can make another one send a message
-- Separating Committees Bot from Parrot Bot
+Events:
+- Time format better with hh:mm easier to type
+- Possibility for event to start one day and finish another (ask if its the next day)
+- Event start selection in months
+- Change hour selection to querys instead of messages
+
+Check error when not fulfilling some flow of the access handler or event handler (not possibility of continuing interaction)
