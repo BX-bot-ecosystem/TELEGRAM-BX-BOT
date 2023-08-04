@@ -1,8 +1,9 @@
 import re
 import time
-from utils import config, db
-
+from utils import config, db, event
+import datetime
 from telegram import ReplyKeyboardMarkup, Update
+from telegram.constants import ParseMode
 from telegram.ext import (
     CommandHandler,
     ContextTypes,
@@ -31,6 +32,7 @@ class Bar:
                         filters.Regex(re.compile(r'board', re.IGNORECASE)), self.bar_board
                     ),
                     CommandHandler("sub", self.manage_sub),
+                    CommandHandler("event", self.get_events),
                     CommandHandler("exit", exit)
                 ],
                 self.SUB: [
@@ -131,4 +133,24 @@ class Bar:
         r.hset(db.user_to_key(update.effective_user), mapping=user_info)
         await context.bot.send_message(chat_id=update.effective_chat.id,
                                        text=f'You have been unsubscribed to {self.committee_name}')
+        return self.HOME
+
+    async def get_events(self, update:Update, context: ContextTypes.DEFAULT_TYPE):
+        time_now = datetime.datetime.now()
+        two_weeks_from_now = time_now + datetime.timedelta(days = 14)
+        time_max = two_weeks_from_now.isoformat() + 'Z'
+        events = event.get_committee_events(self.committee_name, time_max=time_max)
+        event_descriptions = []
+        for item in events:
+            event_descriptions.append(event.event_presentation_from_api(item))
+        message = '\n -------------------------------------- \n'.join(event_descriptions)
+        if len(event_descriptions) == 0:
+            await context.bot.send_message(chat_id=update.effective_chat.id,
+                                           text=f"{self.committee_name} has no events planned in the near future")
+        else:
+            await context.bot.send_message(chat_id=update.effective_chat.id,
+                                           text="The events already planned are:")
+            await context.bot.send_message(chat_id=update.effective_chat.id,
+                                           text=message,
+                                           parse_mode=ParseMode.HTML)
         return self.HOME

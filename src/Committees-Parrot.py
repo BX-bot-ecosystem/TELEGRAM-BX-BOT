@@ -211,7 +211,7 @@ class Event_handler:
         self.description = ''
         self.time_picker = time_picker()
         self.event_handler = ConversationHandler(
-            entry_points=[CommandHandler("event", self.event)],
+            entry_points=[CommandHandler("event", self.events)],
             states={
                 self.state.EVENT: [CommandHandler("view", self.view), CommandHandler("create", self.create)],
                 self.state.DATE: [CallbackQueryHandler(self.date_selection)],
@@ -231,7 +231,7 @@ class Event_handler:
                                        text="You are back to the hub")
         return self.state.HUB
 
-    async def event(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def events(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         if self.user_rights == 'Comms':
             await context.bot.send_message(chat_id=update.effective_chat.id,
                                            text="You don't have access rights for this functionality")

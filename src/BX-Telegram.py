@@ -51,7 +51,7 @@ INITIAL, LORE, CONTINUE, COMMITTEES = range(4)
 committees_list = "\n -  ".join(["",".9 bar🍻🍻 (/bar)", "PhysiX⚛️⚛️ (/Physix)", "ClimbX (/ClimbX)", "BX/B- (/rowing)"])
 
 def message_wait(message):
-    return math.log(len(message), 10)
+    return math.log(len(message), 10) - 1
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Start the conversation and ask user for input."""
