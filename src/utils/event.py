@@ -21,6 +21,10 @@ def get_calendar_service():
     return service
 
 def format_date(date_obj):
+    # If object is a string convert it to a date object
+    if type(date_obj) == type(''):
+        date_obj = datetime.datetime.strptime(date_obj, '%Y-%m-%d').date()
+
     # Get the day of the week (e.g., Monday, Tuesday, etc.)
     day_of_week = date_obj.strftime("%A")
 
@@ -88,7 +92,7 @@ def get_committee_events(committee, time_max=None):
         if event.get('extendedProperties', {}).get('shared', {}).get('committee') == committee
     ]
     return committee_events
-print(len(get_committee_events('.9 Bar')))
+
 COLOR_ID = {'Lavender': '1',
           'Sage': '2',
           'Grape':'3',
@@ -112,3 +116,15 @@ def color_from_committee(committee_name):
         value += ord(character)
     colorID = value%12
     return str(colorID)
+
+def event_presentation_from_api(event_data):
+    committee = event_data["extendedProperties"]["shared"]["committee"]
+    name = event_data["summary"]
+    description = event_data["description"]
+    date, start_time = event_data["start"]["dateTime"].split('T')
+    _ , end_time = event_data["end"]["dateTime"].split('T')
+    start = start_time[:5]
+    end = end_time[:5]
+    return event_presentation_from_data(committee, date, name, start, end, description)
+def event_presentation_from_data(committee, date, name, start, end, description):
+    return f"{committee} is organizing <b>{name}</b> on the {format_date(date)} {start}-{end}\n{description}"

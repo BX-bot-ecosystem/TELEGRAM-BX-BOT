@@ -59,15 +59,13 @@ class Activity(enum.Enum):
     MESSAGE = 5
     ACCESS = 6
     RIGHTS = 7
-    APPLY_ROLE = 8
-    CONFIRMATION_RIGHTS = 9
-    EVENT = 10
-    DATE = 11
-    START_TIME = 12
-    END_TIME = 13
-    NAME = 14
-    SUMMARY = 15
-    CONFIRMATION_EVENT = 16
+    EVENT = 8
+    DATE = 9
+    START_TIME = 10
+    END_TIME = 11
+    NAME = 12
+    SUMMARY = 13
+    CONFIRMATION_EVENT = 14
 class Right_changer:
     class State(enum.Enum):
         USER = 1
@@ -211,12 +209,11 @@ class Event_handler:
         self.name = ''
         self.user_rights = ''
         self.description = ''
-        self.event_description = ''
         self.time_picker = time_picker()
         self.event_handler = ConversationHandler(
             entry_points=[CommandHandler("event", self.event)],
             states={
-                self.state.EVENT: [CallbackQueryHandler(self.event)],
+                self.state.EVENT: [CommandHandler("view", self.view), CommandHandler("create", self.create)],
                 self.state.DATE: [CallbackQueryHandler(self.date_selection)],
                 self.state.START_TIME: [CallbackQueryHandler(self.select_start)],
                 self.state.END_TIME: [CallbackQueryHandler(self.select_end)],
@@ -239,6 +236,22 @@ class Event_handler:
             await context.bot.send_message(chat_id=update.effective_chat.id,
                                            text="You don't have access rights for this functionality")
             return self.state.HUB
+        await context.bot.send_message(chat_id=update.effective_chat.id,
+                                       text="Do you want to /create a new event or to /view the already added events")
+        return self.state.EVENT
+
+    async def view(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        events = event.get_committee_events(self.active_committee)
+        event_descriptions = []
+        for item in events:
+            event_descriptions.append(event.event_presentation_from_api(item))
+        message = '\n -------------------------------------- \n'.join(event_descriptions)
+        await context.bot.send_message(chat_id=update.effective_chat.id,
+                                       text="The events already planned by your committee are:")
+        await context.bot.send_message(chat_id=update.effective_chat.id,
+                                       text=message,
+                                       parse_mode=ParseMode.HTML)
+    async def create(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         calendar, step = WYearTelegramCalendar().build()
 
         await context.bot.send_message(chat_id=update.effective_user.id,
@@ -305,10 +318,9 @@ class Event_handler:
 
     async def summary(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         self.description = update.message.text
-        formatted_date = event.format_date(self.date)
-        self.event_description = f"{self.active_committee} is organizing <b>{self.name}</b> on the {formatted_date}\n {self.description}"
+        event_description = event.event_presentation_from_data(self.active_committee, self.date, self.name, self.start_time, self.end_time, self.description)
         await context.bot.send_message(chat_id=update.effective_chat.id,
-                                       text=f"Current Event:\n {self.event_description}",
+                                       text=f"Current Event:\n {event_description}",
                                        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton('yay', callback_data='True'), InlineKeyboardButton('nay', callback_data='False')]]),
                                        parse_mode=ParseMode.HTML)
         return self.state.CONFIRMATION_EVENT
