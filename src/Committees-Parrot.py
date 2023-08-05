@@ -370,6 +370,7 @@ class Event_handler:
                 context.user_data["step"] = step  # Update the step in user_data
                 return self.state.MODIFY_EVENT
             elif result:
+                await query.edit_message_text(text=f'Selected {data}')
                 data = result
                 self.getting_data = False
 
@@ -381,6 +382,7 @@ class Event_handler:
                                               reply_markup=self.time_picker.keyboard)
                 return self.state.MODIFY_EVENT
             else:
+                await query.edit_message_text(text=f'Selected {data}')
                 data = result
                 self.getting_data = False
 
@@ -393,6 +395,7 @@ class Event_handler:
                 return self.state.MODIFY_EVENT
             else:
                 data = result
+                await query.edit_message_text(text=f'Selected {data}')
                 self.getting_data = False
 
 
