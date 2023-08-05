@@ -20,5 +20,3 @@ Implement basic functionalities:
 
 
 Check error when not fulfilling some flow of the access handler or event handler (not possibility of continuing interaction)
-
-extra info: SPIS, medical centre, different admin comms, 
