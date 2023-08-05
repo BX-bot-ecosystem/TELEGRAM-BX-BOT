@@ -1,7 +1,6 @@
 {
     "example": {
         "command": "/example",
-        "code": "example",
         "board": {
             "Joe": {"role": "Prez", "message": "Hello"},
             "Jack": {"role": "VP", "message": "Hullo"},
