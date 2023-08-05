@@ -5,13 +5,20 @@
             "Joe": {"role": "Prez", "message": "Hello"},
             "Jack": {"role": "VP", "message": "Hullo"},
             "Jimmy Bill Bob": {"role": "Trez", "message": "Gimme your money"}
+        },
+        "messages": {
+            "intro": ["Hullo, how are you? use /event to view events, /sub to subscribe and /exit to exit."]
         }
     },
     ".9 Bar": {
         "command": "/bar"
     },
     "BX/B-": {
-        "command": "/rowing"
+        "command": "/rowing",
+        "board": {
+            "Gianluca": {"role": "Prez"},
+            "Aditya": {"role": "VP"}
+        }
     },
     "PhysiX": {
         "command": "/physix"

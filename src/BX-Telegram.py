@@ -155,7 +155,7 @@ def main() -> None:
                     filters.Regex(re.compile(r'nay', re.IGNORECASE)), nomore
                 )
             ],
-            COMMITTEES:  [committee.handler for committee in Committees.committees]
+            COMMITTEES:  Committees.committees
         },
         fallbacks=[MessageHandler(filters.TEXT, predetermined)],
     )
