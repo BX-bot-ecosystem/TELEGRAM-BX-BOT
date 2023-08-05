@@ -60,6 +60,10 @@ def changeTime(formatted_time, new_time, next_day):
         date = str(date_obj)
     return date + 'T' + new_time + ':00'
 
+def deleteEvent(event):
+    service = get_calendar_service()
+    service.events().delete(calendarId=calendar_id, eventId=event["id"]).execute()
+
 def timeFormat(date, time):
 
     return str(date) + 'T' + time + ':00'

@@ -234,6 +234,9 @@ class event_changer:
             self.event = [event for event in self.events if event["summary"] == call_data][0]
             return True, 'property', None
         if self.state == self.State.PROPERTY:
+            if call_data == 'Delete Event':
+                self.state = self.State.OTHER_EVENT
+                return False, 'delete', self.event
             self.state = self.State.VALUE
             self.property = call_data
             return True, 'value', None
@@ -254,7 +257,7 @@ class event_changer:
         self.keyboard = self._build_keyboard(event_names)
 
     def _build_properties(self):
-        properties = [['Date'], ['Start'], ['End'], ['Name'], ['Description']]
+        properties = [['Date'], ['Start'], ['End'], ['Name'], ['Description'], ['Delete Event']]
         self.keyboard = self._build_keyboard(properties)
 
     def _build_more(self):
@@ -395,6 +398,10 @@ class Event_handler:
 
 
         key, state, event = self.event_changer.process(data)
+        if not key and state == 'delete':
+            gc.deleteEvent(event)
+            await query.edit_message_text(text="Alright")
+            return self.state.HUB
         if not key and state == 'event':
             await query.edit_message_text(text="Alright")
             return self.state.HUB
