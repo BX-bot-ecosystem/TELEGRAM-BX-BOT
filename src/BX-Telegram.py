@@ -125,8 +125,6 @@ def main() -> None:
     # Create the Application and pass it your bot's token.
     application = Application.builder().token(bot_token).build()
     
-    bar = Committees.Bar()
-    physix = Committees.Physix()
     members = Lore.Members()
 
     conv_handler = ConversationHandler(
@@ -157,11 +155,7 @@ def main() -> None:
                     filters.Regex(re.compile(r'nay', re.IGNORECASE)), nomore
                 )
             ],
-            COMMITTEES:  [
-                #State of the bot in which the committees children handlers can be accessed
-                bar.bar_handler,
-                physix.physix_handler
-            ],
+            COMMITTEES:  [committee.handler for committee in Committees.committees]
         },
         fallbacks=[MessageHandler(filters.TEXT, predetermined)],
     )

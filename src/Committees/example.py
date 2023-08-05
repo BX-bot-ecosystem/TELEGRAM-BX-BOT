@@ -10,7 +10,7 @@ from telegram.ext import (
 )
 from utils import config, db
 
-import base
+from Committees import base
 
 
 class Example(base.Committee):
