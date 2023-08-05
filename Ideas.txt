@@ -9,8 +9,15 @@ Template:
 - To create a flow when a given command its given the answers are reached through another instance of the redis database
 - Attribute that keeps track of where you are in a given flow structure
 
-Events:
-- Add possibility to delete events
+Committee:
+- Confirm sending of the message
+
+Implement basic functionalities:
+- Phone number of spis
+- Phone number of medic
+- Phone number of coach in duty and coaches
+- Link to bachelor book of records
+
 
 Check error when not fulfilling some flow of the access handler or event handler (not possibility of continuing interaction)
 
