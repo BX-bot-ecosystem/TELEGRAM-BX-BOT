@@ -1,6 +1,6 @@
 import re
 import time
-from utils import config, db, event
+from utils import config, db, gc
 import datetime
 from telegram import ReplyKeyboardMarkup, Update
 from telegram.constants import ParseMode

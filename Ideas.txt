@@ -12,6 +12,5 @@ Template:
 Events:
 - Possibility for event to start one day and finish another (ask if its the next day)
 - Possibility to see all events planned by the committee and allow to delete them
-- Create system to retrieve the events from an specific committee, and in an specific timeframe
 
 Check error when not fulfilling some flow of the access handler or event handler (not possibility of continuing interaction)
