@@ -24,7 +24,7 @@ class Bar:
         self.BOARD_MEMBERS = "\n".join(["Prez: Carlos", "VPrez: Maxime", "Stock: Gabin", "Comms: Alix", "Events: Anahí", "Sked: Johanna", "Bartenders: Arturo, Antoine"])
         self.EXIT, self.HOME, self.SUB, self.UNSUB = range(4)
 
-        self.bar_handler = ConversationHandler(
+        self.handler = ConversationHandler(
             entry_points=[CommandHandler("bar", self.bar_intro)],
             states={
                 self.HOME: [

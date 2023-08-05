@@ -15,7 +15,7 @@ from telegram.ext import (
 
 class Physix:
     def __init__(self):
-        self.physix_handler = ConversationHandler(
+        self.handler = ConversationHandler(
             entry_points=[CommandHandler("PhysiX", self.physix)],
             states={
                 1: [],
