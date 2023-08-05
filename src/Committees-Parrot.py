@@ -40,7 +40,7 @@ with open('../credentials.json') as f:
     sailore_token = tokens["SailoreBXBot"]
 
 with open('../data/Committees/committees.json') as f:
-    committees = json.load(f)
+    committees = json.load(f)["commands"]
 
 
 logging.basicConfig(
