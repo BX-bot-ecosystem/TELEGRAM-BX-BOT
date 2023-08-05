@@ -58,10 +58,14 @@ class Committee:
     
     async def intro(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         """Intro for the bar"""
-        await self.send_message(update, context, text=f"Welcome to the {self.name} section of the Telegram Bot")
-        await self.send_message(update, context, text="In here you can learn about our board, get the link to join our groupchat, find out about our next events and even subscribe to our notifications from this bot")
-        await self.send_message(update, context, text="To exit this section of the bot just use the command /exit")
-        return self.HOME
+        try:
+            for line in self.info["messages"]["intro"]:
+                await self.send_message(update, context, text=line)
+        except KeyError:
+            await self.send_message(update, context, text=f"Welcome to the {self.name} section of the Telegram Bot")
+            await self.send_message(update, context, text="In here you can learn about our board, get the link to join our groupchat, find out about our next events and even subscribe to our notifications from this bot")
+            await self.send_message(update, context, text="To exit this section of the bot just use the command /exit")
+            return self.HOME
     
     async def board(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         """Introduces the board"""
@@ -70,9 +74,13 @@ class Committee:
 
     async def exit(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         """Exit of the committee section"""
-        await self.send_message(update, context, text="See you again whenever you want to explore this great committee")
-        await self.send_message(update, context, text="After that, what do you want to talk about, we can talk about those shiny gems, the mighty Sail'ore or the different committees a pirate can join")
-        return self.EXIT
+        try:
+            for line in self.info["messages"]["intro"]:
+                await self.send_message(update, context, text=line)
+        except KeyError:
+            await self.send_message(update, context, text="See you again whenever you want to explore this great committee")
+            await self.send_message(update, context, text="After that, what do you want to talk about, we can talk about those shiny gems, the mighty Sail'ore or the different committees a pirate can join")
+            return self.EXIT
 
     async def sub(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         user_info = utils.config.r.hgetall(utils.db.user_to_key(update.effective_user))
@@ -122,18 +130,14 @@ class Committee:
             event_descriptions.append(utils.gc.event_presentation_from_api(item))
         message = '\n -------------------------------------- \n'.join(event_descriptions)
         if len(event_descriptions) == 0:
-            await context.bot.send_message(chat_id=update.effective_chat.id,
-                                           text=f"{self.name} has no events planned in the near future")
+            await self.send_message(update, context, text=f"{self.name} has no events planned in the near future")
         else:
-            await context.bot.send_message(chat_id=update.effective_chat.id,
-                                           text="The events already planned are:")
-            await context.bot.send_message(chat_id=update.effective_chat.id,
-                                           text=message,
-                                           parse_mode=ParseMode.HTML)
+            await self.send_message(update, context, text="The events already planned are:")
+            await self.send_message(update, context, text=message, parse_mode=ParseMode.HTML)
         return self.HOME
     
     @staticmethod
-    async def send_message(update: Update, context: ContextTypes.DEFAULT_TYPE, text, reply_markup=None):
+    async def send_message(update: Update, context: ContextTypes.DEFAULT_TYPE, text, parse_mode=None, reply_markup=None):
         await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
         time.sleep(len(text)/140)
-        await context.bot.send_message(chat_id=update.effective_chat.id, text=text, reply_markup=reply_markup) 
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=text, parse_mode=parse_mode, reply_markup=reply_markup) 
