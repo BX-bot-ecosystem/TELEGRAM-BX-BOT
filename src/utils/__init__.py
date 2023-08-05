@@ -1,3 +1,3 @@
 from .scan import scan
-import config
-import db
+#import config
+#import db
