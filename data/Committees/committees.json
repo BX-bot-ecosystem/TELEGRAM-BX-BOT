@@ -1,6 +1,7 @@
 {
     "commands": {"/bar": ".9 Bar", "/physix": "PhysiX", "/climbx": "ClimbX", "/rowing": "BX/B-", "/example":  "example"},
     "example": {
+        "code": "example",
         "board": {
             "Joe": {"role": "Prez", "message": "Hello"},
             "Jack": {"role": "VP", "message": "Hullo"},
