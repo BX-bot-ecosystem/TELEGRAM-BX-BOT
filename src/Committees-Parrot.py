@@ -773,7 +773,7 @@ class Committees_Login:
     async def login(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         committee = update.message.text
         if committee in self.access_list:
-            self.active_committee = [committee_name for committee_name in committees if committee_name["command"] == committee][0]
+            self.active_committee = [committee_name for committee_name in committees.keys() if committees[committee_name]["command"] == committee][0]
             await context.bot.send_message(chat_id=update.effective_user.id,
                                            text=f"You have successfully logged in")
             self.update_hub()

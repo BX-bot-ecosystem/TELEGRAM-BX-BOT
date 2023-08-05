@@ -1,5 +1,4 @@
 {
-    "commands": {"/bar": ".9 Bar", "/physix": "PhysiX", "/climbx": "ClimbX", "/rowing": "BX/B-", "/example":  "example"},
     "example": {
         "command": "/example",
         "code": "example",
@@ -8,5 +7,17 @@
             "Jack": {"role": "VP", "message": "Hullo"},
             "Jimmy Bill Bob": {"role": "Trez", "message": "Gimme your money"}
         }
+    },
+    ".9 Bar": {
+        "command": "/bar"
+    },
+    "BX/B-": {
+        "command": "/rowing"
+    },
+    "PhysiX": {
+        "command": "/physix"
+    },
+    "ClimbX": {
+        "command": "/climbx"
     }
 }
