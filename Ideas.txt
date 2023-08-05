@@ -10,7 +10,6 @@ Template:
 - Attribute that keeps track of where you are in a given flow structure
 
 Events:
-- Possibility for event to start one day and finish another (ask if its the next day)
-- Possibility to see all events planned by the committee and allow to delete them
+- Add possibility to delete events
 
 Check error when not fulfilling some flow of the access handler or event handler (not possibility of continuing interaction)
