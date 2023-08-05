@@ -40,7 +40,7 @@ with open('../credentials.json') as f:
     sailore_token = tokens["SailoreBXBot"]
 
 with open('../data/Committees/committees.json') as f:
-    committees = json.load(f)["commands"]
+    committees = json.load(f)
 
 
 logging.basicConfig(
@@ -612,7 +612,7 @@ class Access_handler:
                 users_to_eliminate = [user for user in self.admins_rights.keys() if self.admins_rights[user] == 'None']
                 for user in users_to_eliminate:
                     del self.admins_rights[user]
-                    committee_command = [key for key in committees.keys() if committees[key] == self.active_committee][0]
+                    committee_command = committees[self.active_committee]["command"]
                     db.eliminate_access_rights(self.admins_ids[user], self.active_committee, committee_command)
             new_rights = {self.admins_ids[admin]: self.admins_rights[admin] for admin in self.admins_rights.keys()}
             db.change_committee_access(self.active_committee, new_rights)
@@ -773,7 +773,7 @@ class Committees_Login:
     async def login(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         committee = update.message.text
         if committee in self.access_list:
-            self.active_committee = committees[committee]
+            self.active_committee = [committee_name for committee_name in committees if committee_name["command"] == committee][0]
             await context.bot.send_message(chat_id=update.effective_user.id,
                                            text=f"You have successfully logged in")
             self.update_hub()
