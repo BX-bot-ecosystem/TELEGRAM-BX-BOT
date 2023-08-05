@@ -28,8 +28,8 @@ class Committee:
                         filters.Regex(re.compile(r'board', re.IGNORECASE)), self.board
                     ),
                     CommandHandler("sub", self.manage_sub),
-                    CommandHandler("exit", exit)
-                ] + home_handlers if home_handlers else [],
+                    CommandHandler("exit", self.exit)
+                ] + (home_handlers if home_handlers else []),
                 self.SUB: [
                     MessageHandler(
                         filters.Regex(re.compile(r'yay', re.IGNORECASE)), self.sub
