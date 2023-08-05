@@ -6,9 +6,13 @@ from telegram.ext import (
     MessageHandler,
     filters,
 )
+from telegram.constants import ParseMode
 import re
-import utils
 import time
+import datetime
+
+
+import utils
 
 
 class Committee:
@@ -28,6 +32,7 @@ class Committee:
                         filters.Regex(re.compile(r'board', re.IGNORECASE)), self.board
                     ),
                     CommandHandler("sub", self.manage_sub),
+                    CommandHandler("event", self.get_events),
                     CommandHandler("exit", self.exit)
                 ] + (home_handlers if home_handlers else []),
                 self.SUB: [
@@ -106,6 +111,26 @@ class Committee:
             await self.send_message(update, context, text='Doing so will mean that you will receive their communications through our associated bot @SailoreParrotBot')
             await self.send_message(update, context, text='Do you wish to subscribe?', reply_markup=self.MARKUP)
             return self.SUB
+    
+    async def get_events(self, update:Update, context: ContextTypes.DEFAULT_TYPE):
+        time_now = datetime.datetime.now()
+        two_weeks_from_now = time_now + datetime.timedelta(days = 14)
+        time_max = two_weeks_from_now.isoformat() + 'Z'
+        events = utils.gc.get_committee_events(self.name, time_max=time_max)
+        event_descriptions = []
+        for item in events:
+            event_descriptions.append(utils.gc.event_presentation_from_api(item))
+        message = '\n -------------------------------------- \n'.join(event_descriptions)
+        if len(event_descriptions) == 0:
+            await context.bot.send_message(chat_id=update.effective_chat.id,
+                                           text=f"{self.name} has no events planned in the near future")
+        else:
+            await context.bot.send_message(chat_id=update.effective_chat.id,
+                                           text="The events already planned are:")
+            await context.bot.send_message(chat_id=update.effective_chat.id,
+                                           text=message,
+                                           parse_mode=ParseMode.HTML)
+        return self.HOME
     
     @staticmethod
     async def send_message(update: Update, context: ContextTypes.DEFAULT_TYPE, text, reply_markup=None):
