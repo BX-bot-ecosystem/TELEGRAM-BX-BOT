@@ -41,21 +41,45 @@ def format_date(date_obj):
 
     return formatted_date
 
+def changeDate(formatted_time, new_date):
+    date, time = formatted_time.split('T')
+    return str(new_date)+ 'T'+ time
+
+def nextDay(formatted_time):
+    date, time = formatted_time.split('T')
+    date_obj = datetime.datetime.strptime(date, '%Y-%m-%d').date()
+    date_obj = date_obj + datetime.timedelta(days=1)
+    date = str(date_obj)
+    return date + 'T' + time
+
+def changeTime(formatted_time, new_time, next_day):
+    date, time = formatted_time.split('T')
+    if next_day:
+        date_obj = datetime.datetime.strptime(date, '%Y-%m-%d').date()
+        date_obj = date_obj + datetime.timedelta(days=1)
+        date = str(date_obj)
+    return date + 'T' + new_time + ':00'
+
 def timeFormat(date, time):
 
     return str(date) + 'T' + time + ':00'
 
 def create_event(date, startTime, endTime, committee, name, description):
     service = get_calendar_service()
+    startDate = timeFormat(date, startTime)
+    if endTime < startTime:
+        endDate = timeFormat(date + datetime.timedelta(days=1), endTime)
+    else:
+        endDate = timeFormat(date, endTime)
     event_data={
         "summary": name,
         "description": description,
         "start": {
-            "dateTime": timeFormat(date, startTime),
+            "dateTime": startDate,
             "timeZone": "Europe/Paris",
         },
         "end": {
-            "dateTime": timeFormat(date, endTime),
+            "dateTime": endDate,
             "timeZone": "Europe/Paris",
         },
         "extendedProperties": {
@@ -106,6 +130,13 @@ COLOR_ID = {'Lavender': '1',
           'Tomato': '11'
           }
 
+def update_event(event_data):
+    """
+    Updates an event given its event data
+    """
+    event_id = event_data["id"]
+    service = get_calendar_service()
+    service.events().update(calendarId=calendar_id, eventId=event_id, body=event_data).execute()
 
 def color_from_committee(committee_name):
     """

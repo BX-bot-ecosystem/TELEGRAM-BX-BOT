@@ -6,7 +6,7 @@ import telegram.error
 import enum
 
 from telegram_bot_calendar import WYearTelegramCalendar, LSTEP
-from utils import db, event
+from utils import db, gc
 
 from telegram import __version__ as TG_VER
 try:
@@ -66,6 +66,7 @@ class Activity(enum.Enum):
     NAME = 12
     SUMMARY = 13
     CONFIRMATION_EVENT = 14
+    MODIFY_EVENT = 15
 class Right_changer:
     class State(enum.Enum):
         USER = 1
@@ -198,9 +199,99 @@ class time_picker:
             keyboard.append(row)
         self.keyboard = InlineKeyboardMarkup(keyboard)
 
+class event_changer:
+    class State(enum.Enum):
+        EVENT = 1
+        PROPERTY = 2
+        VALUE = 3
+        MORE = 4
+        OTHER_EVENT = 5
+    def __init__(self, events):
+        self.events = events
+        self.event = None
+        self.params = {}
+        self.property = None
+        self.state = self.State.OTHER_EVENT
+
+    def build(self):
+        if self.state == self.State.EVENT:
+            self._build_events()
+        elif self.state == self.State.PROPERTY:
+            self._build_properties()
+        elif self.state == self.State.MORE:
+            self._build_more()
+        elif self.state == self.State.OTHER_EVENT:
+            self._build_other_event()
+
+    def process(self, call_data):
+        if self.state == self.State.OTHER_EVENT:
+            if call_data == 'yay':
+                self.state = self.State.EVENT
+                return True, 'event', None
+            return False, 'event', None
+        if self.state == self.State.EVENT:
+            self.state = self.State.PROPERTY
+            self.event = [event for event in self.events if event["summary"] == call_data][0]
+            return True, 'property', None
+        if self.state == self.State.PROPERTY:
+            self.state = self.State.VALUE
+            self.property = call_data
+            return True, 'value', None
+        if self.state == self.State.VALUE:
+            self.state = self.State.MORE
+            self.change(self.property, call_data)
+            return True, 'more', None
+        if self.state == self.State.MORE:
+            if call_data == 'yay':
+                self.state = self.State.PROPERTY
+                return True, 'property', None
+            self.state = self.State.OTHER_EVENT
+            self.check_dates()
+            return False, 'other', self.event
+
+    def _build_events(self):
+        event_names = [[event_data['summary']] for event_data in self.events]
+        self.keyboard = self._build_keyboard(event_names)
+
+    def _build_properties(self):
+        properties = [['Date'], ['Start'], ['End'], ['Name'], ['Description']]
+        self.keyboard = self._build_keyboard(properties)
+
+    def _build_more(self):
+        more = [['yay', 'nay']]
+        self.keyboard = self._build_keyboard(more)
+
+    def _build_other_event(self):
+        other = [['yay', 'nay']]
+        self.keyboard = self._build_keyboard(other)
+
+    def _build_keyboard(self, elements):
+        keyboard = []
+        for i, row in enumerate(elements):
+            keyboard.append([])
+            for element in row:
+                keyboard[i].append(InlineKeyboardButton(element, callback_data=element))
+        return InlineKeyboardMarkup(keyboard)
+
+    def change(self, property_changed, data):
+        if property_changed == 'Name':
+            self.event["summary"] = data
+        if property_changed == 'Description':
+            self.event["description"] = data
+        if property_changed == 'Date':
+            self.event["start"]["dateTime"] = gc.changeDate(self.event["start"]["dateTime"], data)
+            self.event["end"]["dateTime"] = gc.changeDate(self.event["end"]["dateTime"], data)
+        if property_changed == 'Start':
+            self.event["start"]["dateTime"] = gc.changeTime(self.event["start"]["dateTime"], data, False)
+        if property_changed == 'End':
+            self.event["end"]["dateTime"] = gc.changeTime(self.event["end"]["dateTime"], data, False)
+
+    def check_dates(self):
+        if self.event["end"]["dateTime"]  < self.event["start"]["dateTime"]:
+            self.event["end"]["dateTime"] = gc.nextDay(self.event["end"]["dateTime"])
 
 class Event_handler:
-    def __init__(self, active_committee):
+    def __init__(self, active_committee, ):
         self.state = Activity.EVENT
         self.active_committee = active_committee
         self.date = ''
@@ -209,7 +300,9 @@ class Event_handler:
         self.name = ''
         self.user_rights = ''
         self.description = ''
+        self.getting_data = False
         self.time_picker = time_picker()
+        self.event_changer = None
         self.event_handler = ConversationHandler(
             entry_points=[CommandHandler("event", self.events)],
             states={
@@ -219,7 +312,8 @@ class Event_handler:
                 self.state.END_TIME: [CallbackQueryHandler(self.select_end)],
                 self.state.NAME: [MessageHandler(filters.TEXT, self.naming)],
                 self.state.SUMMARY: [MessageHandler(filters.TEXT, self.summary)],
-                self.state.CONFIRMATION_EVENT: [CallbackQueryHandler(self.confirmation)]
+                self.state.CONFIRMATION_EVENT: [CallbackQueryHandler(self.confirmation)],
+                self.state.MODIFY_EVENT: [CallbackQueryHandler(self.modify_event), MessageHandler(filters.TEXT, self.modify_event)]
             },
             fallbacks=[MessageHandler(filters.TEXT, self.back)],
             map_to_parent={
@@ -241,16 +335,109 @@ class Event_handler:
         return self.state.EVENT
 
     async def view(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        events = event.get_committee_events(self.active_committee)
+        events = gc.get_committee_events(self.active_committee)
         event_descriptions = []
         for item in events:
-            event_descriptions.append(event.event_presentation_from_api(item))
+            event_descriptions.append(gc.event_presentation_from_api(item))
         message = '\n -------------------------------------- \n'.join(event_descriptions)
         await context.bot.send_message(chat_id=update.effective_chat.id,
                                        text="The events already planned by your committee are:")
         await context.bot.send_message(chat_id=update.effective_chat.id,
                                        text=message,
                                        parse_mode=ParseMode.HTML)
+        await context.bot.send_message(chat_id=update.effective_chat.id,
+                                       text="Do you want to change any of these events?",
+                                       reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton('yay', callback_data='yay')], [InlineKeyboardButton('nay', callback_data='nay')]]))
+        self.event_changer = event_changer(events)
+        return self.state.MODIFY_EVENT
+
+    async def modify_event(self, update: Update, context: CallbackContext):
+        if self.event_changer.property in ['Name', 'Description'] and self.getting_data:
+            data = update.message.text
+            self.getting_data = False
+        else:
+            query = update.callback_query
+            await query.answer()
+            data = query.data
+        if self.event_changer.property == 'Date' and self.getting_data:
+            ##Handles the date selection
+            result, key, step = WYearTelegramCalendar().process(data)
+            if not result and key:
+                await query.edit_message_text(f"Enter the new date", reply_markup=key)
+                context.user_data["step"] = step  # Update the step in user_data
+                return self.state.MODIFY_EVENT
+            elif result:
+                data = result
+                self.getting_data = False
+
+        if self.event_changer.property == 'Start' and self.getting_data:
+            key, result = self.time_picker.process(data)
+            self.time_picker.build()
+            if result is None:
+                await query.edit_message_text(text='Enter the new starting time',
+                                              reply_markup=self.time_picker.keyboard)
+                return self.state.MODIFY_EVENT
+            else:
+                data = result
+                self.getting_data = False
+
+        if self.event_changer.property == 'End' and self.getting_data:
+            key, result = self.time_picker.process(data)
+            self.time_picker.build()
+            if result is None:
+                await query.edit_message_text(text='Enter the new ending time',
+                                              reply_markup=self.time_picker.keyboard)
+                return self.state.MODIFY_EVENT
+            else:
+                data = result
+                self.getting_data = False
+
+
+
+        key, state, event = self.event_changer.process(data)
+        if not key and state == 'event':
+            await query.edit_message_text(text="Alright")
+            return self.state.HUB
+        message = {'event': 'Which event do you want to modify?', 'property': 'Which property do you want to change?',
+                   'more': 'Do you want to change other properties', 'other': 'Changes saved\nDo you want to change another event?'}
+        if key and state == 'more':
+            self.event_changer.build()
+            await context.bot.send_message(chat_id=update.effective_chat.id,
+                                           text=message[state], reply_markup=self.event_changer.keyboard)
+            return self.state.MODIFY_EVENT
+
+        if not key and state == 'other':
+            self.event_changer.build()
+            gc.update_event(event)
+            await query.edit_message_text(text=message[state], reply_markup=self.event_changer.keyboard)
+            return self.state.MODIFY_EVENT
+
+        if key and state != 'value':
+            self.event_changer.build()
+            await query.edit_message_text(text=message[state], reply_markup=self.event_changer.keyboard)
+            return self.state.MODIFY_EVENT
+        property_to_change = self.event_changer.property
+        self.getting_data = True
+        if property_to_change in ['Name', 'Description']:
+            await query.edit_message_text(text=f"Enter the new {property_to_change.lower()}")
+            return self.state.MODIFY_EVENT
+        if property_to_change == 'Date':
+            calendar, step = WYearTelegramCalendar().build()
+            await query.edit_message_text(text=f"Enter the new date", reply_markup=calendar)
+            return self.state.MODIFY_EVENT
+        if property_to_change == 'Start':
+            self.time_picker.build()
+            await query.edit_message_text(text="Enter the new starting time",
+                                          reply_markup=self.time_picker.keyboard)
+            return self.state.MODIFY_EVENT
+        if property_to_change == 'End':
+            self.time_picker.build()
+            await query.edit_message_text(text="Enter the new ending time",
+                                          reply_markup=self.time_picker.keyboard)
+            return self.state.MODIFY_EVENT
+
+
+
     async def create(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         calendar, step = WYearTelegramCalendar().build()
 
@@ -318,7 +505,7 @@ class Event_handler:
 
     async def summary(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         self.description = update.message.text
-        event_description = event.event_presentation_from_data(self.active_committee, self.date, self.name, self.start_time, self.end_time, self.description)
+        event_description = gc.event_presentation_from_data(self.active_committee, self.date, self.name, self.start_time, self.end_time, self.description)
         await context.bot.send_message(chat_id=update.effective_chat.id,
                                        text=f"Current Event:\n {event_description}",
                                        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton('yay', callback_data='True'), InlineKeyboardButton('nay', callback_data='False')]]),
@@ -332,7 +519,7 @@ class Event_handler:
             await query.edit_message_text(text="Event upload cancelled")
             return self.state.HUB
         await query.edit_message_text(text=f"The event has been uploaded to the google calendar, users will be able to see it on your committee part of SailoreBXBot two weeks prior to the event")
-        event.create_event(self.date, self.start_time, self.end_time, self.active_committee, self.name, self.description)
+        gc.create_event(self.date, self.start_time, self.end_time, self.active_committee, self.name, self.description)
         return self.state.HUB
 
 
