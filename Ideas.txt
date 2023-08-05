@@ -15,3 +15,5 @@ Events:
 - Create system to retrieve the events from an specific committee, and in an specific timeframe
 
 Check error when not fulfilling some flow of the access handler or event handler (not possibility of continuing interaction)
+
+extra info: SPIS, medical centre, different admin comms, 
