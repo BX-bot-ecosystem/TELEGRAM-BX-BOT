@@ -33,7 +33,7 @@ class Bar:
                     ),
                     CommandHandler("sub", self.manage_sub),
                     CommandHandler("event", self.get_events),
-                    CommandHandler("exit", exit)
+                    CommandHandler("exit", self.exit)
                 ],
                 self.SUB: [
                     MessageHandler(
