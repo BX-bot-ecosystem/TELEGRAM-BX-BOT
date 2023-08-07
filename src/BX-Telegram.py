@@ -126,15 +126,13 @@ def main() -> None:
     application = Application.builder().token(bot_token).build()
     
     members = Lore.Members()
-
+    gemhandler = Lore.GemHandler()
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start), MessageHandler(filters.TEXT, start)],
         states={
             INITIAL: [ 
                 #Initial state of the bot in which it can be asked about gems, the lore and committees
-                MessageHandler(
-                    filters.Regex(re.compile(r'gems', re.IGNORECASE)), gems
-                ),
+                gemhandler.handler,
                 MessageHandler(
                     filters.Regex(re.compile(r"l'?ore", re.IGNORECASE)), lore
                 ),
