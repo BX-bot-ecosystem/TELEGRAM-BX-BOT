@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Generate Committee File
         run: |
@@ -19,12 +19,30 @@ jobs:
           sed "s/class example/class $branch_name/g" src/Committees/example.py > "src/Committees/${branch_name}.py"
         shell: bash
 
+      - name: Switch to New Branch
+        run: |
+          branch_name=${{ github.ref }}
+          git fetch origin $branch_name:$branch_name
+          git checkout $branch_name
+        shell: bash
+
       - name: Create Committee Team
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           branch_name=${{ github.ref }}
           branch_name=${branch_name#refs/heads/committee/}
+          curl -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -d '{"name":"'$branch_name'","privacy":"closed"}' \
+            https://api.github.com/orgs/YOUR_ORG/teams
+
+      - name: Create Team
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          branch_name=${{ github.ref }}
+          branch_name=${branch_name#refs/heads/comm/}
           curl -X POST \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
             -d '{"name":"'$branch_name'","privacy":"closed"}' \
