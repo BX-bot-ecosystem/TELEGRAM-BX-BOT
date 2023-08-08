@@ -19,6 +19,39 @@ jobs:
         with: 
           ref: committee/${{ steps.branch_name.outputs.branch }}
 
+      - name: Create Committee Team
+        id: create_team
+        env:
+          GITHUB_TOKEN: ${{ secrets.ORG_ADMIN }}
+        run: |
+          branch_name=${{ github.ref }}
+          branch_name=${branch_name#refs/heads/committee/}
+          response=$(curl -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            https://api.github.com/orgs/BX-bot-ecosystem/teams \
+            -d '{"name":"'$branch_name'","privacy":"closed"}')
+          echo $response
+          team_slug=$(echo "$response" | jq -r '.slug')
+          echo "Team slug: $team_slug"
+          echo "team_id=$team_id" >> $GITHUB_OUTPUT
+          echo "team_slug=$team_slug" >> $GITHUB_OUTPUT
+
+      - name: Add Team to Repo
+        env:
+          GITHUB_TOKEN: ${{ secrets.ORG_ADMIN }}
+        run: |
+          branch_name=${{ github.ref }}
+          branch_name=${branch_name#refs/heads/comm/}
+          team_slug=${{ steps.create_team.outputs.team_slug }}
+          response=$(curl -L \
+            -X PUT \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            https://api.github.com/orgs/BX-bot-ecosystem/teams/$team_slug/repos/BX-bot-ecosystem/Telegram-BX-Bot \
+            -d '{"permission": "push"}')
+          echo "Add Team to Repo Response: $response"
+
       - name: Generate Committee File
         run: |
           branch_name=${{ github.ref }}
@@ -38,15 +71,18 @@ jobs:
           git push origin committee/$branch_name
         shell: bash
 
-      - name: Create Committee Team
+      - name: Protect Branch
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ORG_ADMIN }}
         run: |
           branch_name=${{ github.ref }}
           branch_name=${branch_name#refs/heads/committee/}
-          curl -X POST \
+          team_slug=${{ steps.create_team.outputs.team_slug }}
+          response=$(curl -L \
+            -X PUT \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.ORG_ADMIN }}" \
-            https://api.github.com/orgs/BX-bot-ecosystem/teams \
-            -d '{"name":"'$branch_name'","privacy":"closed"}' \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            https://api.github.com/repos/BX-bot-ecosystem/Telegram-BX-Bot/branches/committee/$branch_name/protection \
+            -d '{"required_status_checks": null, "enforce_admins": false, "required_pull_request_reviews": null, "restrictions": {"users": ["GianlucaOberreit"], "teams": ["$team_slug"]}}')
+          echo "Branch Protection Response: $response"
             
