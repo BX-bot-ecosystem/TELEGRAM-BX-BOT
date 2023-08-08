@@ -52,8 +52,11 @@ jobs:
             -d '{"name":"'$branch_name'","privacy":"closed"}')
           echo $response
           team_id=$(echo "$response" | jq -r '.id')
+          team_slug=$(echo "$response" | jq -r '.slug')
           echo "Team ID: $team_id"
+          echo "Team slug: $team_slug"
           echo "team_id=$team_id" >> $GITHUB_OUTPUT
+          echo "team_slug=$
 
       - name: Add Team to Repo
         env:
@@ -61,11 +64,11 @@ jobs:
         run: |
           branch_name=${{ github.ref }}
           branch_name=${branch_name#refs/heads/comm/}
-          team_id=${{ steps.create_team.outputs.team_id }}
+          team_slug=${{ steps.create_team.outputs.team_slug }}
           response=$(curl -X PUT \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
-            https://api.github.com/orgs/BX-bot-ecosystem/teams/$team_id/repos/BX-bot-ecosystem/Telegram-BX-Bot \
+            https://api.github.com/orgs/BX-bot-ecosystem/teams/$team_slug/repos/BX-bot-ecosystem/Telegram-BX-Bot \
             -d '{"permission": "push"}')
           echo "Add Team to Repo Response: $response"
 
