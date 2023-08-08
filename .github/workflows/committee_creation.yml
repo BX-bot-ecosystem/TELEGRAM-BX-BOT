@@ -46,7 +46,7 @@ jobs:
           branch_name=${branch_name#refs/heads/committee/}
           curl -X POST \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Authorization: Bearer ${{ secrets.ADMING_ACCESS }}" \
             https://api.github.com/orgs/BX-bot-ecosystem/teams \
             -d '{"name":"'$branch_name'","privacy":"closed"}' \
             
