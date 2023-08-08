@@ -23,7 +23,7 @@ jobs:
         run: |
           branch_name=${{ github.ref }}
           branch_name=${branch_name#refs/heads/committee/}
-          sed "s/class Example/class $branch_name/g" src/Committees/example.py > "src/Committees/${branch_name}.py"
+          sed "s/class Example/class ${branch_name^}/g" src/Committees/example.py > "src/Committees/${branch_name}.py"
         shell: bash
 
       - name: Commit and Push Changes
