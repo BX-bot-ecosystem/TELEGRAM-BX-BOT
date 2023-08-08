@@ -13,11 +13,12 @@ jobs:
         id: branch_name
         run: |
           branch_name=${{ github.ref }}
-          echo "branch_name=${branch_name#refs/heads/committee/}" >> $GITHUB_OUTPUT
+          echo "branch=${branch_name#refs/heads/committee/}" >> $GITHUB_OUTPUT
+          echo $GITHUB_OUTPUT
       - name: Check out code
         uses: actions/checkout@v3
         with: 
-          ref: committee/${{ steps.branch_name.branch_name }}
+          ref: committee/${{ steps.branch_name.branch }}
 
       - name: Generate Committee File
         run: |
