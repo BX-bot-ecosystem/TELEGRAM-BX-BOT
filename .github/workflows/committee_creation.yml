@@ -19,25 +19,6 @@ jobs:
         with: 
           ref: committee/${{ steps.branch_name.outputs.branch }}
 
-      - name: Generate Committee File
-        run: |
-          branch_name=${{ github.ref }}
-          branch_name=${branch_name#refs/heads/committee/}
-          sed "s/class Example/class ${branch_name^}/g" src/Committees/example.py > "src/Committees/${branch_name}.py"
-        shell: bash
-
-      - name: Commit and Push Changes
-        run: |
-          branch_name=${{ github.ref }}
-          branch_name=${branch_name#refs/heads/committee/}
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-          git status
-          git add "src/Committees/${branch_name}.py"
-          git commit -m "Add ${branch_name}.py"
-          git push origin committee/$branch_name
-        shell: bash
-
       - name: Create Committee Team
         id: create_team
         env:
@@ -70,6 +51,25 @@ jobs:
             https://api.github.com/orgs/BX-bot-ecosystem/teams/$team_slug/repos/BX-bot-ecosystem/Telegram-BX-Bot \
             -d '{"permission": "push"}')
           echo "Add Team to Repo Response: $response"
+
+      - name: Generate Committee File
+        run: |
+          branch_name=${{ github.ref }}
+          branch_name=${branch_name#refs/heads/committee/}
+          sed "s/class Example/class ${branch_name^}/g" src/Committees/example.py > "src/Committees/${branch_name}.py"
+        shell: bash
+
+      - name: Commit and Push Changes
+        run: |
+          branch_name=${{ github.ref }}
+          branch_name=${branch_name#refs/heads/committee/}
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git status
+          git add "src/Committees/${branch_name}.py"
+          git commit -m "Add ${branch_name}.py"
+          git push origin committee/$branch_name
+        shell: bash
 
       - name: Protect Branch
         env:
