@@ -39,14 +39,31 @@ jobs:
         shell: bash
 
       - name: Create Committee Team
+        id: create_team
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ORG_ADMIN }}
         run: |
           branch_name=${{ github.ref }}
           branch_name=${branch_name#refs/heads/committee/}
-          curl -X POST \
+          response=$(curl -X POST \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.ORG_ADMIN }}" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
             https://api.github.com/orgs/BX-bot-ecosystem/teams \
-            -d '{"name":"'$branch_name'","privacy":"closed"}' \
+            -d '{"name":"'$branch_name'","privacy":"closed"}')
+          team_id=$(echo "$response" | jq -r '.id')
+          echo "Team ID: $team_id"
+          echo "::set-output name=team_id::$team_id"
+
+      - name: Protect Branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.ORG_ADMIN }}
+        run: |
+          branch_name=${{ github.ref }}
+          branch_name=${branch_name#refs/heads/committee/}
+          team_id=${{ steps.create_team.outputs.team_id }}
+          response=$(curl -X PUT \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -d '{"enforce_admins": false, "required_status_checks": null, "required_pull_request_reviews": {"dismissal_restrictions": {"users": [], "teams": ['$team_id']}, "dismiss_stale_reviews": true, "require_code_owner_reviews": true, "required_approving_review_count": 1}, "restrictions": {"users": [], "teams": ['$team_id']}}' \
+            "https://api.github.com/repos/YOUR_ORG/YOUR_REPO/branches/$branch_name/protection")
+          echo "Branch Protection Response: $response"
             
