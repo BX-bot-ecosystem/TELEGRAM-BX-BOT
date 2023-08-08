@@ -12,7 +12,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
         with: 
-          ref: committee/test
+          ref: committee/${{ github.ref }}
 
       - name: Generate Committee File
         run: |
