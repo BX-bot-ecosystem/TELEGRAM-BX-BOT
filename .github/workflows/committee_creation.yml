@@ -35,7 +35,7 @@ jobs:
           git status
           git add "src/Committees/${branch_name}.py"
           git commit -m "Add ${branch_name}.py"
-          git push origin $branch_name
+          git push origin committee/$branch_name
         shell: bash
 
       - name: Create Committee Team
