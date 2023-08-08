@@ -57,7 +57,7 @@ jobs:
 
       - name: Add Team to Repo
         env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ORG_ADMIN }}
         run: |
           branch_name=${{ github.ref }}
           branch_name=${branch_name#refs/heads/comm/}
