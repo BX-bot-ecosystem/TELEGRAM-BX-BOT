@@ -51,9 +51,7 @@ jobs:
             https://api.github.com/orgs/BX-bot-ecosystem/teams \
             -d '{"name":"'$branch_name'","privacy":"closed"}')
           echo $response
-          team_id=$(echo "$response" | jq -r '.id')
           team_slug=$(echo "$response" | jq -r '.slug')
-          echo "Team ID: $team_id"
           echo "Team slug: $team_slug"
           echo "team_id=$team_id" >> $GITHUB_OUTPUT
           echo "team_slug=$team_slug" >> $GITHUB_OUTPUT
