@@ -47,6 +47,6 @@ jobs:
           curl -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
-            https://api.github.com/orgs/Telegram-BX-Bot/teams
+            https://api.github.com/orgs/Telegram-BX-Bot/teams \
             -d '{"name":"'$branch_name'","privacy":"closed"}' \
             
