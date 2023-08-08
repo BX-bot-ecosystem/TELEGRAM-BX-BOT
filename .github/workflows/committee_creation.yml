@@ -9,10 +9,15 @@ jobs:
   create-file:
     runs-on: ubuntu-latest
     steps:
+      - name: Get branch name
+        id: branch_name
+        run: |
+          branch_name=${{ github.ref }}
+          branch_name=${branch_name#refs/heads/committee/}
       - name: Check out code
         uses: actions/checkout@v3
         with: 
-          ref: committee/${${{ github.ref }}#refs/heads/committee/}
+          ref: committee/${{ setps.branch_name.branch_name }}
 
       - name: Generate Committee File
         run: |
