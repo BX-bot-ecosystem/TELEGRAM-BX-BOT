@@ -1,0 +1,31 @@
+name: Create Branch File
+
+on:
+  create:
+    branches:
+      - 'committee/*'
+
+jobs:
+  create-file:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Generate Committee File
+        run: |
+          branch_name=${{ github.ref }}
+          branch_name=${branch_name#refs/heads/committee/}
+          sed "s/class example/class $branch_name/g" src/Committees/example.py > "src/Committees/${branch_name}.py"
+        shell: bash
+
+      - name: Create Committee Team
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          branch_name=${{ github.ref }}
+          branch_name=${branch_name#refs/heads/committee/}
+          curl -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -d '{"name":"'$branch_name'","privacy":"closed"}' \
+            https://api.github.com/orgs/YOUR_ORG/teams
