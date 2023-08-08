@@ -66,6 +66,6 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
             https://api.github.com/repos/BX-bot-ecosystem/Telegram-BX-Bot/branches/committee/$branch_name/protection \
-            -d '{"required_status_checks": null, "enforce_admins": false, "required_pull_request_reviews": null, "restrictions": {"users": [], "teams": ['$team_id']}}')
+            -d '{"required_status_checks": null, "enforce_admins": false, "required_pull_request_reviews": null, "restrictions": {"users": [], "teams": ["$team_id"]}}')
           echo "Branch Protection Response: $response"
             
