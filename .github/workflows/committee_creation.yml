@@ -56,7 +56,7 @@ jobs:
           echo "Team ID: $team_id"
           echo "Team slug: $team_slug"
           echo "team_id=$team_id" >> $GITHUB_OUTPUT
-          echo "team_slug=$
+          echo "team_slug=$team_slug" >> $GITHUB_OUTPUT
 
       - name: Add Team to Repo
         env:
