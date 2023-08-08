@@ -65,7 +65,8 @@ jobs:
           branch_name=${{ github.ref }}
           branch_name=${branch_name#refs/heads/comm/}
           team_slug=${{ steps.create_team.outputs.team_slug }}
-          response=$(curl -X PUT \
+          response=$(curl -L \
+            -X PUT \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
             https://api.github.com/orgs/BX-bot-ecosystem/teams/$team_slug/repos/BX-bot-ecosystem/Telegram-BX-Bot \
