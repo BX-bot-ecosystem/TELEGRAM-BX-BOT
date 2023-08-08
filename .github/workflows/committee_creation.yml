@@ -18,7 +18,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
         with: 
-          ref: committee/${{ steps.branch_name.branch }}
+          ref: committee/${{ steps.branch_name.outputs.branch }}
 
       - name: Generate Committee File
         run: |
