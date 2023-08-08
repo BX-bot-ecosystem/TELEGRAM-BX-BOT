@@ -18,7 +18,20 @@ jobs:
         run: |
           branch_name=${{ github.ref }}
           branch_name=${branch_name#refs/heads/committee/}
-          sed "s/class example/class $branch_name/g" src/Committees/example.py > "src/Committees/${branch_name}.py"
+          test=${pwd}
+          sed "s/class Example/class $branch_name/g" src/Committees/example.py > "src/Committees/${branch_name}.py"
+        shell: bash
+
+      - name: Commit and Push Changes
+        run: |
+          branch_name=${{ github.ref }}
+          branch_name=${branch_name#refs/heads/comm/}
+          test=${pwd}
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git add "src/Committees/${branch_name}.py"
+          git commit -m "Add ${branch_name}.py"
+          git push origin $branch_name
         shell: bash
 
       - name: Create Committee Team
