@@ -11,13 +11,8 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v3
-      
-      - name: Switch to New Branch
-        run: |
-          branch_name=${{ github.ref }}
-          git fetch origin $branch_name:$branch_name
-          git checkout $branch_name
-        shell: bash
+        with: 
+          ref: committee/test
 
       - name: Generate Committee File
         run: |
