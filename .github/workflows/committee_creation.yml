@@ -65,7 +65,7 @@ jobs:
           response=$(curl -X PUT \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
-            https://api.github.com/BX-bot-ecosystem/Telegram-BX-Bot/teams/$team_id/repos/BX-bot-ecosystem/Telegram-BX-Bot \
+            https://api.github.com/orgs/BX-bot-ecosystem/teams/$team_id/repos/BX-bot-ecosystem/Telegram-BX-Bot \
             -d '{"permission": "push"}')
           echo "Add Team to Repo Response: $response"
 
