@@ -24,7 +24,7 @@ jobs:
       - name: Commit and Push Changes
         run: |
           branch_name=${{ github.ref }}
-          branch_name=${branch_name#refs/heads/comm/}
+          branch_name=${branch_name#refs/heads/committee/}
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
           git add "src/Committee/${branch_name}.py"
