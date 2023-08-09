@@ -1,6 +1,7 @@
 python-telegram-bot
 python-telegram-bot-calendar
 gspread
+python-dotenv
 passlib
 redis
 google-api-python-client

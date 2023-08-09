@@ -4,9 +4,12 @@ import random
 import string
 import telegram.error
 import enum
+from dotenv import load_dotenv
+import os
 
 from telegram_bot_calendar import WYearTelegramCalendar, LSTEP
 from utils import db, gc
+import utils
 
 from telegram import __version__ as TG_VER
 try:
@@ -33,13 +36,14 @@ from telegram.ext import (
     CallbackContext
 )
 
-with open('../credentials.json') as f:
-    tokens = json.load(f)
-    committees_token = tokens["SailoreCommitteesBot"]
-    parrot_token = tokens["SailoreParrotBot"]
-    sailore_token = tokens["SailoreBXBot"]
 
-with open('../data/Committees/committees.json') as f:
+load_dotenv()
+
+COMMITTEES_TOKEN = os.getenv("SailoreCommitteesBot")
+PARROT_TOKEN = os.getenv("SailoreParrotBot")
+SAILORE_TOKEN = os.getenv("SailoreBXBot")
+
+with open(utils.config.ROOT + '/data/Committees/committees.json') as f:
     committees = json.load(f)
 
 
@@ -695,8 +699,8 @@ class Committee_hub:
         message = update.message.text
         keys = db.subs_of_committee(self.active_committee)
         users_info = db.get_users_info(keys)
-        parrot_bot = Bot(parrot_token)
-        sailore_bot = Bot(sailore_token)
+        parrot_bot = Bot(PARROT_TOKEN)
+        sailore_bot = Bot(SAILORE_TOKEN)
         counter = 0
         for user in users_info:
             try:
@@ -816,7 +820,7 @@ class Committees_Login:
 def main() -> None:
     """Run the bot."""
     # Create the Application and pass it your bot's token.
-    application = Application.builder().token(committees_token).build()
+    application = Application.builder().token(COMMITTEES_TOKEN).build()
     committees_hub = Committees_Login()
     application.add_handler(committees_hub.login_handler)
 

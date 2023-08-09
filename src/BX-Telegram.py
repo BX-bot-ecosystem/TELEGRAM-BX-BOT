@@ -2,6 +2,8 @@ import logging
 import re
 import time
 import json
+from dotenv import load_dotenv
+import os
 import math
 import Lore
 import Committees
@@ -9,10 +11,10 @@ from utils import db, config
 import utils
 import threading
 
-with open('../credentials.json') as f:
-    bot_token = json.load(f)["SailoreBXBot"]
+load_dotenv()
+BOT_TOKEN = os.getenv("SAILORE_BX_BOT")
 
-with open('../data/Initial.json', encoding='utf-8') as f:
+with open(utils.config.ROOT + '/data/Initial.json', encoding='utf-8') as f:
     texts = json.load(f)
 
 from telegram import __version__ as TG_VER
@@ -123,7 +125,7 @@ def main() -> None:
     changes_checker_thread.start()
     
     # Create the Application and pass it your bot's token.
-    application = Application.builder().token(bot_token).build()
+    application = Application.builder().token(BOT_TOKEN).build()
     
     members = Lore.Members()
     gemhandler = Lore.GemHandler()
