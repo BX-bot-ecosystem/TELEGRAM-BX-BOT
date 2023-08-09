@@ -64,14 +64,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     db.add_to_db(update.effective_user)
     return INITIAL
 
-async def gems(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Tell them a little bit about gems, in the future it will give more options but for that I'll have to ask Gaia and Adrien about IW"""
-    for message in texts["gems"]:
-        await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
-        time.sleep(message_wait(message))
-        await context.bot.send_message(chat_id=update.effective_chat.id, text=message)
-    return INITIAL
-
 async def more(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Ask about what other pirate do they wanna learn about"""
     time.sleep(0.8)
