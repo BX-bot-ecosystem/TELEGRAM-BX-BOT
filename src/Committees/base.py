@@ -59,7 +59,7 @@ class Committee:
     async def intro(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         """Intro for the bar"""
         try:
-            for line in self.info["messages"]["intro"]:
+            for line in self.info["messages"]["intro.py"]:
                 await self.send_message(update, context, text=line)
         except KeyError:
             await self.send_message(update, context, text=f"Welcome to the {self.name} section of the Telegram Bot")
@@ -75,7 +75,7 @@ class Committee:
     async def exit(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         """Exit of the committee section"""
         try:
-            for line in self.info["messages"]["intro"]:
+            for line in self.info["messages"]["intro.py"]:
                 await self.send_message(update, context, text=line)
         except KeyError:
             await self.send_message(update, context, text="See you again whenever you want to explore this great committee")

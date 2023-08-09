@@ -9,6 +9,7 @@ import Lore
 import Committees
 from utils import db, config
 import utils
+import Committees.intro
 
 load_dotenv()
 BOT_TOKEN = os.getenv("SAILORE_BX_BOT")
@@ -71,14 +72,6 @@ async def gems(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await context.bot.send_message(chat_id=update.effective_chat.id, text=message)
     return INITIAL
 
-async def lore(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Tell them a little bit about Sailore and allows them to learn about each of the members"""
-    for message in texts["lore"]:
-        await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
-        time.sleep(message_wait(message))
-        await context.bot.send_message(chat_id=update.effective_chat.id, text=message)
-    return LORE
-
 async def more(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Ask about what other pirate do they wanna learn about"""
     time.sleep(0.8)
@@ -104,20 +97,6 @@ async def predetermined(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     db.add_to_db(update.effective_user)
     return INITIAL
 
-async def committees(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Tell them about the different committees"""
-    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
-    time.sleep(1.2)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="Committees are the central part of our piratey student life, there is lots of them and if you don't find the one you want, you can even create a new one")
-    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
-    time.sleep(0.9)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="Here is the full list of committees:" + committees_list)
-    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
-    time.sleep(1.1)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="To enter a committee section just press the command next to its name")
-    return COMMITTEES
-
-
 def main() -> None:
     """Run the bot."""
     # Create the Application and pass it your bot's token.
@@ -132,10 +111,10 @@ def main() -> None:
                 #Initial state of the bot in which it can be asked about gems, the lore and committees
                 gemhandler.handler,
                 MessageHandler(
-                    filters.Regex(re.compile(r"l'?ore", re.IGNORECASE)), lore
+                    filters.Regex(re.compile(r"l'?ore", re.IGNORECASE)), Lore.intro
                 ),
                 MessageHandler(
-                    filters.Regex(re.compile(r"com+it+e+s?", re.IGNORECASE)), committees #added the question marks cuz people tend to mispell this word
+                    filters.Regex(re.compile(r"com+it+e+s?", re.IGNORECASE)), Committees.intro #added the question marks cuz people tend to mispell this word
                 ),
             ],
             LORE: [
