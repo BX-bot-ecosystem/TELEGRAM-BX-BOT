@@ -2,11 +2,13 @@ from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from datetime import datetime
 import json
+from dotenv import load_dotenv
+import os
 from utils import config
 import datetime
 
-with open(config.ROOT + '/credentials.json') as f:
-    calendar_id = json.load(f)["calendar id"]
+load_dotenv()
+CALENDAR_ID = os.getenv("CALENDAR_ID")
 # The scopes define the level of access your bot will have to the shared calendar.
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
@@ -62,7 +64,7 @@ def changeTime(formatted_time, new_time, next_day):
 
 def deleteEvent(event):
     service = get_calendar_service()
-    service.events().delete(calendarId=calendar_id, eventId=event["id"]).execute()
+    service.events().delete(calendarId=CALENDAR_ID, eventId=event["id"]).execute()
 
 def timeFormat(date, time):
 
@@ -94,13 +96,13 @@ def create_event(date, startTime, endTime, committee, name, description):
         "colorId": color_from_committee(committee)
     }
     # Use the service to create an event in the shared calendar.
-    event = service.events().insert(calendarId=calendar_id, body=event_data).execute()
+    event = service.events().insert(calendarId=CALENDAR_ID, body=event_data).execute()
     return event
 
 def get_events():
     service = get_calendar_service()
     # Use the service to retrieve events from the shared calendar.
-    events_result = service.events().list(calendarId=calendar_id).execute()
+    events_result = service.events().list(calendarId=CALENDAR_ID).execute()
     events = events_result.get("items", [])
     return events
 
@@ -114,7 +116,7 @@ def get_committee_events(committee, time_max=None):
     query_params = {}
     if time_max is not None:
         query_params['timeMax'] = time_max
-    events_result = service.events().list(calendarId=calendar_id, timeMin=time_min, **query_params).execute()
+    events_result = service.events().list(calendarId=CALENDAR_ID, timeMin=time_min, **query_params).execute()
     committee_events = [
         event for event in events_result['items']
         if event.get('extendedProperties', {}).get('shared', {}).get('committee') == committee
@@ -140,7 +142,7 @@ def update_event(event_data):
     """
     event_id = event_data["id"]
     service = get_calendar_service()
-    service.events().update(calendarId=calendar_id, eventId=event_id, body=event_data).execute()
+    service.events().update(calendarId=CALENDAR_ID, eventId=event_id, body=event_data).execute()
 
 def color_from_committee(committee_name):
     """

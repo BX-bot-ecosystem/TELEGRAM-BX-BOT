@@ -2,13 +2,14 @@ import logging
 import re
 import time
 import json
+from dotenv import load_dotenv
+import os
 from utils import db, config
 
+load_dotenv()
+BOT_TOKEN = os.getenv("SAILORE_BX_BOT")
 
-with open(config.ROOT + './credentials.json') as f:
-    bot_token = json.load(f)["SailoreBXBot"]
-
-with open(config.ROOT + './data/Initial.json', encoding='utf-8') as f:
+with open(config.ROOT + '/data/Initial.json', encoding='utf-8') as f:
     texts = json.load(f)
 
 from telegram import __version__ as TG_VER

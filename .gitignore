@@ -6,4 +6,4 @@ bx-telegram
 bx-telegram.pub 
 credentials.json
 service_account.json
-*.env
+.env

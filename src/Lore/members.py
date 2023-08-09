@@ -11,6 +11,7 @@ from telegram.ext import (
     MessageHandler,
     filters,
 )
+import utils
 
 
 class Members:
@@ -22,7 +23,7 @@ class Members:
         
         self.INITIAL, self.LORE, self.CONTINUE = range(3)
         
-        with open('../data/lore_descriptions.json', encoding='utf-8') as f:
+        with open(utils.config.ROOT + '/data/lore_descriptions.json', encoding='utf-8') as f:
             self.members_desc = json.load(f)
     
     async def member(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
