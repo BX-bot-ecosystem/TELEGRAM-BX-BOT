@@ -9,7 +9,6 @@ import Lore
 import Committees
 from utils import db, config
 import utils
-import threading
 
 load_dotenv()
 BOT_TOKEN = os.getenv("SAILORE_BX_BOT")
@@ -121,9 +120,6 @@ async def committees(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 def main() -> None:
     """Run the bot."""
-    changes_checker_thread = threading.Thread(target=utils.scan)
-    changes_checker_thread.start()
-    
     # Create the Application and pass it your bot's token.
     application = Application.builder().token(BOT_TOKEN).build()
     
@@ -139,7 +135,7 @@ def main() -> None:
                     filters.Regex(re.compile(r"l'?ore", re.IGNORECASE)), lore
                 ),
                 MessageHandler(
-                    filters.Regex(re.compile(r"com?mit?te?es", re.IGNORECASE)), committees #added the question marks cuz people tend to mispell this word
+                    filters.Regex(re.compile(r"com+it+e+s?", re.IGNORECASE)), committees #added the question marks cuz people tend to mispell this word
                 ),
             ],
             LORE: [

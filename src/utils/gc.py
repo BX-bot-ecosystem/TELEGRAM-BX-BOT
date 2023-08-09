@@ -13,7 +13,7 @@ CALENDAR_ID = os.getenv("CALENDAR_ID")
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
 # Path to the service account key JSON file.
-SERVICE_ACCOUNT_KEY_PATH = config.ROOT + '/service_account.json'
+SERVICE_ACCOUNT_KEY_PATH = config.ROOT + '/../service_account.json'
 def get_calendar_service():
     # Load the service account credentials from the JSON key file.
     credentials = Credentials.from_service_account_file(SERVICE_ACCOUNT_KEY_PATH, scopes=SCOPES)
