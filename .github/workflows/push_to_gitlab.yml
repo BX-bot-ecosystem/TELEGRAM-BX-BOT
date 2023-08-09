@@ -1,0 +1,21 @@
+name: Push to GitLab
+
+on:
+  push:
+    branches:
+      - ship
+
+jobs:
+  push-to-gitlab:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Push to GitLab
+        run: |
+          git remote add gitlab "https://oauth2:${GITLAB_TOKEN}@gitlab.binets.fr/bx-telegram/telegram-bx-bot.git"
+          git push gitlab ship
+        env:
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
