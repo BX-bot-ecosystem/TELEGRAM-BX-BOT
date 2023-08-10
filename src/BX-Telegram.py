@@ -37,6 +37,7 @@ from telegram.ext import (
     ConversationHandler,
     MessageHandler,
     filters,
+    CallbackQueryHandler,
 )
 
 # Enable logging
@@ -64,22 +65,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     db.add_to_db(update.effective_user)
     return INITIAL
 
-async def more(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Ask about what other pirate do they wanna learn about"""
-    time.sleep(0.8)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="Which other pirate do you want to learn about me matey?")
-    return LORE
-
-async def nomore(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Same as start but a bit different"""
-    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
-    time.sleep(0.6)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="What other stories can I tell you?")
-    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
-    time.sleep(1.2)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="We can talk about those shiny gems, the mighty Sail'ore or the different committees a pirate can join")
-    return INITIAL
-
 async def predetermined(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Predetermined message when something is not understood"""
     for message in texts["predetermined"]:
@@ -103,7 +88,7 @@ def main() -> None:
                 #Initial state of the bot in which it can be asked about gems, the lore and committees
                 gemhandler.handler,
                 MessageHandler(
-                    filters.Regex(re.compile(r"l'?ore", re.IGNORECASE)), Lore.intro
+                    filters.Regex(re.compile(r"l'?ore", re.IGNORECASE)), members.intro
                 ),
                 MessageHandler(
                     filters.Regex(re.compile(r"com+it+e+s?", re.IGNORECASE)), Committees.intro #added the question marks cuz people tend to mispell this word
@@ -111,20 +96,16 @@ def main() -> None:
             ],
             LORE: [
                 #State of the bot in which it can be asked about the different sailore members
-                MessageHandler(filters.TEXT, members.member)
+                CallbackQueryHandler(members.member)
             ],
             CONTINUE: [
                 #State of the bot in which it is asked if it wants to continue asking about sailore members
-                MessageHandler(
-                    filters.Regex(re.compile(r'yay', re.IGNORECASE)), more
-                ),
-                MessageHandler(
-                    filters.Regex(re.compile(r'nay', re.IGNORECASE)), nomore
-                )
+                CallbackQueryHandler(members.more)
             ],
             COMMITTEES:  Committees.committees
         },
         fallbacks=[MessageHandler(filters.TEXT, predetermined)],
+        per_chat=False
     )
     
     application.add_handler(conv_handler)
