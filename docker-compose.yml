@@ -1,0 +1,18 @@
+services:
+    bot:
+        build: .
+        environment:
+            - BOT_TOKEN=${BOT_TOKEN}
+            - REDIS_HOST=redis
+            - REDIS_PORT=${REDIS_PORT}
+        ports:
+            - "80:80"
+        networks:
+            - bot-network
+    redis:
+        image: redis:latest
+        networks:
+            - bot-network
+
+networks:
+    bot-network:
