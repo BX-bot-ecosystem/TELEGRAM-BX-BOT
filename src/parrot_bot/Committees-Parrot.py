@@ -1,4 +1,3 @@
-import logging
 import json
 import random
 import string
@@ -33,14 +32,7 @@ SAILORE_TOKEN = os.getenv("SailoreBXBot")
 with open(utils.config.ROOT + '/data/Committees/committees.json') as f:
     committees = json.load(f)
 
-
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
-# set higher logging level for httpx to avoid all GET and POST requests being logged
-logging.getLogger("httpx").setLevel(logging.WARNING)
-
-logger = logging.getLogger(__name__)
+utils.logger(__name__)
 
 class Activity(enum.Enum):
     HOME = 1
