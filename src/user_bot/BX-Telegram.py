@@ -7,7 +7,7 @@ import os
 import math
 import Lore
 import Committees
-from utils import db, config
+from utils import db
 import utils
 import Committees.intro
 
@@ -88,13 +88,12 @@ def main() -> None:
     # Create the Application and pass it your bot's token.
     application = Application.builder().token(BOT_TOKEN).build()
     members = Lore.Members()
-    gemhandler = Lore.GemHandler()
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start), MessageHandler(filters.TEXT, start)],
         states={
             INITIAL: [ 
                 #Initial state of the bot in which it can be asked about gems, the lore and committees
-                gemhandler.handler,
+                Lore.GemHandler.handler,
                 MessageHandler(
                     filters.Regex(re.compile(r"l'?ore", re.IGNORECASE)), members.intro
                 ),

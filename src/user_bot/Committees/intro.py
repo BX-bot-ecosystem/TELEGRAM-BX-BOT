@@ -1,14 +1,10 @@
 import time
 from telegram import Update
 from telegram.ext import (
-    Application,
-    CommandHandler,
     ContextTypes,
-    ConversationHandler,
-    MessageHandler,
-    filters,
 )
-import Committees
+from user_bot import Committees
+
 INITIAL, LORE, CONTINUE, COMMITTEES = range(4)
 
 async def intro(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
