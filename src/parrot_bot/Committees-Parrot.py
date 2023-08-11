@@ -4,25 +4,12 @@ import random
 import string
 import telegram.error
 import enum
-from dotenv import load_dotenv
-import os
 
 from telegram_bot_calendar import WYearTelegramCalendar, LSTEP
 from utils import db, gc
 import utils
 
-from telegram import __version__ as TG_VER
-try:
-    from telegram import __version_info__
-except ImportError:
-    __version_info__ = (0, 0, 0, 0, 0)  # type: ignore[assignment]
-
-if __version_info__ < (20, 0, 0, "alpha", 1):
-    raise RuntimeError(
-        f"This example is not compatible with your current PTB version {TG_VER}. To view the "
-        f"{TG_VER} version of this example, "
-        f"visit https://docs.python-telegram-bot.org/en/v{TG_VER}/examples.html"
-    )
+utils.Vcheck.telegram()
 from telegram import Update, Bot, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.constants import ParseMode
 from telegram.ext import (
@@ -36,9 +23,9 @@ from telegram.ext import (
     CallbackContext
 )
 
-
+from dotenv import load_dotenv
+import os
 load_dotenv()
-
 COMMITTEES_TOKEN = os.getenv("SailoreCommitteesBot")
 PARROT_TOKEN = os.getenv("SailoreParrotBot")
 SAILORE_TOKEN = os.getenv("SailoreBXBot")
