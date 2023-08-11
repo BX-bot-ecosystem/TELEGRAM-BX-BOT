@@ -13,7 +13,21 @@
     },
     ".9 Bar": {
         "name": ".9 Bar \uD83C\uDF7B\uD83C\uDF7B",
-        "command": "/bar"
+        "command": "/bar",
+        "board": {
+            "Carlos": {"role":  "Prez", "message":  "Always up to doing any crazy plan"},
+            "Maxime": {"role":  "VPrez", "message":  "Making sure everything runs smoothly"},
+            "Gabin": {"role":  "Stock", "message":  "Just making sure we don't run out of beer"},
+            "Alix": {"role":  "Comms", "message":  "Always pleased to inform you about everything"},
+            "Klaara": {"role":  "Trez", "message":  "You better give us what you owe us"},
+            "Anahi": {"role":  "Events", "message":  "Preparing your favorite events"},
+            "Johanna": {"role":  "Sked", "message":  "You better arrive in time..."},
+            "Arturo": {"role":  "Bartender", "message":  "Always thinking about the next cocktail"},
+            "Antoine": {"role":  "Bartender", "message":  "Serving you the best beers"}
+        },
+        "messages": {
+            "intro": ["Heyy, welcome to the greatest committee of all time", "Always up to serve you the best cocktails of all of Palaiseau"]
+        }
     },
     "BX/B-": {
         "name": "BX/B-",

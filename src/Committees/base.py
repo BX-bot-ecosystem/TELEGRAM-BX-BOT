@@ -102,7 +102,10 @@ class Committee:
         if query.data == 'Nay':
             await query.edit_message_text(text='Alright')
             return self.HOME
-        await query.edit_message_text(text=self.info["board"][query.data]["message"])
+        message = f'{query.data}: "{self.info["board"][query.data]["message"]}"'
+        await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
+        time.sleep(len(message) / 140)
+        await query.edit_message_text(text=message)
         await self.send_message(update, context, text='Do you want to learn more about any other members?', reply_markup=self.board_keyboard)
     async def board(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         """Introduces the board"""

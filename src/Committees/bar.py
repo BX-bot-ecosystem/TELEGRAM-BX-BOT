@@ -11,10 +11,16 @@ from telegram.ext import (
     MessageHandler,
     filters,
 )
-
+from Committees import base
 r = config.r
 
-class Bar:
+class Bar(base.Committee):
+    def __init__(self):
+        super().__init__(
+            name=".9 Bar"
+        )
+
+class Bar_old:
     def __init__(self):
         self.REPLY_KEYBOARD = [
             ["Yay", "Nay"],
