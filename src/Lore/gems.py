@@ -9,7 +9,7 @@ from utils import db, config
 load_dotenv()
 BOT_TOKEN = os.getenv("SAILORE_BX_BOT")
 
-with open(config.ROOT + '/data/Initial.json', encoding='utf-8') as f:
+with open(config.ROOT + '/data/lore.json', encoding='utf-8') as f:
     texts = json.load(f)
 
 from telegram import __version__ as TG_VER

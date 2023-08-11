@@ -1,5 +1,6 @@
 {
     "example": {
+        "name": "Example \uD83D\uDC40",
         "command": "/example",
         "board": {
             "Joe": {"role": "Prez", "message": "Hello"},
