@@ -12,9 +12,11 @@
         }
     },
     ".9 Bar": {
+        "name": ".9 Bar \uD83C\uDF7B\uD83C\uDF7B",
         "command": "/bar"
     },
     "BX/B-": {
+        "name": "BX/B-",
         "command": "/rowing",
         "board": {
             "Gianluca": {"role": "Prez"},
@@ -22,9 +24,11 @@
         }
     },
     "PhysiX": {
+        "name": "PhysiX \uFE0F",
         "command": "/physix"
     },
     "ClimbX": {
+        "name": "ClimbX \uD83E\uDDD7\uD83E\uDDD7",
         "command": "/climbx"
     }
 }

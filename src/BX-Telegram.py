@@ -51,7 +51,7 @@ logger = logging.getLogger(__name__)
 
 INITIAL, LORE, CONTINUE, COMMITTEES = range(4)
 
-committees_list = "\n -  ".join(["",".9 bar🍻🍻 (/bar)", "PhysiX⚛️⚛️ (/Physix)", "ClimbX (/ClimbX)", "BX/B- (/rowing)"])
+
 
 def message_wait(message):
     return math.log(len(message), 10) - 1
@@ -82,11 +82,11 @@ async def generic(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return INITIAL
 
 
+
 def main() -> None:
     """Run the bot."""
     # Create the Application and pass it your bot's token.
     application = Application.builder().token(BOT_TOKEN).build()
-    
     members = Lore.Members()
     gemhandler = Lore.GemHandler()
     conv_handler = ConversationHandler(
