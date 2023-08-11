@@ -65,14 +65,22 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     db.add_to_db(update.effective_user)
     return INITIAL
 
-async def predetermined(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Predetermined message when something is not understood"""
-    for message in texts["predetermined"]:
+async def generic(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Response depending on the message received"""
+    message = update.message.text
+    keys = texts.keys()
+    for key in keys:
+        if re.match(key, message.lower()):
+            text = texts[key]
+            break
+    else:
+        text = texts["predetermined"]
+    for message in text:
         await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
         time.sleep(message_wait(message))
         await context.bot.send_message(chat_id=update.effective_chat.id, text=message)
-    db.add_to_db(update.effective_user)
     return INITIAL
+
 
 def main() -> None:
     """Run the bot."""
@@ -93,6 +101,7 @@ def main() -> None:
                 MessageHandler(
                     filters.Regex(re.compile(r"com+it+e+s?", re.IGNORECASE)), Committees.intro #added the question marks cuz people tend to mispell this word
                 ),
+                MessageHandler(filters.TEXT, generic)
             ],
             LORE: [
                 #State of the bot in which it can be asked about the different sailore members
@@ -104,7 +113,7 @@ def main() -> None:
             ],
             COMMITTEES:  Committees.committees
         },
-        fallbacks=[MessageHandler(filters.TEXT, predetermined)],
+        fallbacks=[MessageHandler(filters.TEXT, generic)],
         per_chat=False
     )
     

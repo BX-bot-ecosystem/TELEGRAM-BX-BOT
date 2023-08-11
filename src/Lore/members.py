@@ -30,11 +30,8 @@ class Members:
         
         self.INITIAL, self.LORE, self.CONTINUE = range(3)
         
-        with open(utils.config.ROOT + '/data/lore_descriptions.json', encoding='utf-8') as f:
-            self.members_desc = json.load(f)
-
-        with open(utils.config.ROOT + '/data/Initial.json', encoding='utf-8') as f:
-            self.texts = json.load(f)
+        with open(utils.config.ROOT + '/data/lore.json', encoding='utf-8') as f:
+            self.lore_texts = json.load(f)
 
         LORE_MEMBERS = [['Adrien', 'Eli', 'Giselle'],
                         ['Nic', 'Jeanne', 'Ryan'],
@@ -45,10 +42,10 @@ class Members:
 
     async def intro(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         """Tell them a little bit about Sailore and allows them to learn about each of the members"""
-        for i, message in enumerate(self.texts["lore"]):
+        for i, message in enumerate(self.lore_texts["lore"]):
             await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
             time.sleep(message_wait(message))
-            if i == len(self.texts["lore"]) - 1:
+            if i == len(self.lore_texts["lore"]) - 1:
                 await context.bot.send_message(chat_id=update.effective_chat.id, text=message,
                                                reply_markup=self.LORE_MARKUP)
             else:
@@ -62,7 +59,7 @@ class Members:
         await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
         time.sleep(3)
         try:
-            await context.bot.send_message(chat_id=update.effective_chat.id, text=self.members_desc[query.data])
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=self.lore_texts[query.data])
         except KeyError:
             await context.bot.send_message(chat_id=update.effective_chat.id, text="Oh me matey, I don't know that pirate")
         await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
