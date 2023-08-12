@@ -1,14 +1,14 @@
+# Use an official Python runtime as the base image
 FROM python:3.10
 
 WORKDIR /app
 
-COPY src/deadlines_bot/requirements.txt ./requirements.txt
+COPY requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
-COPY src/deadlines_bot ./
+COPY src/user_bot ./
 COPY src/utils ./utils
 COPY src/data ./data
 COPY credentials.json ../
-
 
 EXPOSE 80
 
