@@ -4,8 +4,8 @@ version: '3'
 services:
     user_bot:
         build:
-            context: ./src/user_bot
-            dockerfile: ./src/user_bot/Dockerfile
+            context: ./
+            dockerfile: user.Dockerfile
         environment:
             - REDIS_HOST=redis
             - REDIS_PORT=6379
@@ -15,17 +15,14 @@ services:
             - CALENDAR_ID=${CALENDAR_ID}
         ports:
             - "80:80"
-        networks:
-            - web
-            - default
         depends_on: 
             - redis
             - db
     
     parrot_bot:
         build:
-            context: ./src/parrot_bot
-            dockerfile: ./src/parrot_bot/Dockerfile
+            context: ./
+            dockerfile: parrot.Dockerfile
         environment:
             - REDIS_HOST=redis
             - REDIS_PORT=6379
@@ -34,18 +31,15 @@ services:
             - SAILORE_COMMITTEE_BOT=${SAILORE_COMMITTEE_BOT}
             - CALENDAR_ID=${CALENDAR_ID}
         ports:
-            - "80:80"
-        networks: 
-            - web
-            - default
+            - "8443:8443"
         depends_on: 
             - redis
             - db
 
     deadlines_bot:
         build:
-            context: ./src/deadlines_bot
-            dockerfile: ./src/deadlines_bot/Dockerfile
+            context: ./
+            dockerfile: deadlines.Dockerfile
         environment:
             - REDIS_HOST=redis
             - REDIS_PORT=6379
@@ -70,7 +64,4 @@ services:
 
 volumes:
     mariadb-data:
-    
-networks:
-    web:
-        external: true
+        
