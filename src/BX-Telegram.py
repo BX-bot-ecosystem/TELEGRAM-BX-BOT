@@ -8,6 +8,7 @@ import bx_utils
 
 from dotenv import load_dotenv
 import os
+
 load_dotenv()
 BOT_TOKEN = os.getenv("SAILORE_BX_BOT")
 gc_id = int(os.getenv("GC_ID"))
@@ -74,6 +75,7 @@ async def manage_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                    text="The support has been informed and it will be taken into consideration")
     await context.bot.send_message(chat_id=gc_id,
                                    text=f'Request from {update.effective_user.name}: \n{request}')
+    return INITIAL
 
 
 def main() -> None:
