@@ -28,10 +28,13 @@ class Committee:
         ]
         self.MARKUP = ReplyKeyboardMarkup(self.reply_keyboard, one_time_keyboard=True)
         self.EXIT, self.HOME, self.SUB, self.UNSUB, self.BOARD = range(5)
-        if "info" in self.info["messages"].keys():
-            home_handlers.append(CommandHandler("info", self.about))
-        if "groupchat" in self.info["messages"].keys():
-            home_handlers.append(CommandHandler("groupchat", self.groupchat))
+        if home_handlers is None:
+            home_handlers = []
+        if "messages" in self.info.keys():
+            if "info" in self.info["messages"].keys():
+                home_handlers.append(CommandHandler("info", self.about))
+            if "groupchat" in self.info["messages"].keys():
+                home_handlers.append(CommandHandler("groupchat", self.groupchat))
         self.states = {**{
             self.HOME: [
                            MessageHandler(
