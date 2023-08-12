@@ -39,9 +39,9 @@ from telegram.ext import (
 
 load_dotenv()
 
-COMMITTEES_TOKEN = os.getenv("SailoreCommitteesBot")
-PARROT_TOKEN = os.getenv("SailoreParrotBot")
-SAILORE_TOKEN = os.getenv("SailoreBXBot")
+COMMITTEES_TOKEN = os.getenv("SAILORE_COMMITTEE_BOT")
+PARROT_TOKEN = os.getenv("SAILORE_PARROT_BOT")
+SAILORE_TOKEN = os.getenv("SAILORE_BX_BOT")
 
 with open(utils.config.ROOT + '/data/Committees/committees.json') as f:
     committees = json.load(f)
@@ -450,8 +450,6 @@ class Event_handler:
                                           reply_markup=self.time_picker.keyboard)
             return self.state.MODIFY_EVENT
 
-
-
     async def create(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         calendar, step = WYearTelegramCalendar().build()
 
@@ -535,7 +533,6 @@ class Event_handler:
         await query.edit_message_text(text=f"The event has been uploaded to the google calendar, users will be able to see it on your committee part of SailoreBXBot two weeks prior to the event")
         gc.create_event(self.date, self.start_time, self.end_time, self.active_committee, self.name, self.description)
         return self.state.HUB
-
 
 class Access_handler:
     def __init__(self, active_committee):
