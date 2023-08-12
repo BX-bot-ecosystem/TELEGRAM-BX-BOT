@@ -23,7 +23,7 @@
             "Anahi": {"role":  "Events", "message":  "Preparing your favorite events"},
             "Johanna": {"role":  "Sked", "message":  "You better arrive in time..."},
             "Arturo": {"role":  "Bartender", "message":  "Always thinking about the next cocktail"},
-            "Antoine": {"role":  "Bartender", "message":  "Serving you the best beers"}
+            "Antoine": {"role":  "Bartender"}
         },
         "messages": {
             "intro": ["Heyy, welcome to the greatest committee of all time", "Always up to serve you the best cocktails of all of Palaiseau"]

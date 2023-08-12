@@ -72,9 +72,11 @@ class Committee:
             await self.send_message(update, context, text="To exit this section of the bot just use the command /exit")
         return self.HOME
     def create_balanced_layout(self):
-        names = list(self.info["board"].keys())
+        names = [name for name in self.info["board"].keys() if 'message' in self.info["board"][name].keys()]
         total_members = len(names)
         ideal_group_size = math.isqrt(total_members)
+        if names == []:
+            return None
         remainder = total_members % ideal_group_size
 
         groups = [names[i:i + ideal_group_size] for i in range(0, total_members - remainder, ideal_group_size)]
@@ -87,6 +89,8 @@ class Committee:
 
     def create_keyboard(self):
         layout = self.create_balanced_layout()
+        if layout is None:
+            return None
         keyboard = []
         for name_list in layout:
             keyboard_row = []
@@ -110,8 +114,12 @@ class Committee:
     async def board(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         """Introduces the board"""
         await self.send_message(update, context, text=f"Voici the members of the {self.name} board:\n" + self.board_members)
+        reply_markup = self.board_keyboard
+        if reply_markup is None:
+            return self.HOME
         await self.send_message(update, context, text='Do you want to learn more about any of these members?', reply_markup=self.board_keyboard)
         return self.BOARD
+
 
     async def exit(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         """Exit of the committee section"""
