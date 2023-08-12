@@ -1,4 +1,4 @@
-from Committees import base
+from user_bot.Committees import base
 
 
 class Rowing(base.Committee):

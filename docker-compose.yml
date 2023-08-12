@@ -1,0 +1,76 @@
+version: '3'
+
+
+services:
+    user_bot:
+        build:
+            context: ./src/user_bot
+            dockerfile: ./src/user_bot/Dockerfile
+        environment:
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+            - SAILORE_BX_BOT=${SAILORE_BX_BOT}
+            - SAILORE_PARROT_BOT=${SAILORE_PARROT_BOT}
+            - SAILORE_COMMITTEE_BOT=${SAILORE_COMMITTEE_BOT}
+            - CALENDAR_ID=${CALENDAR_ID}
+        ports:
+            - "80:80"
+        networks:
+            - web
+            - default
+        depends_on: 
+            - redis
+            - db
+    
+    parrot_bot:
+        build:
+            context: ./src/parrot_bot
+            dockerfile: ./src/parrot_bot/Dockerfile
+        environment:
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+            - SAILORE_BX_BOT=${SAILORE_BX_BOT}
+            - SAILORE_PARROT_BOT=${SAILORE_PARROT_BOT}
+            - SAILORE_COMMITTEE_BOT=${SAILORE_COMMITTEE_BOT}
+            - CALENDAR_ID=${CALENDAR_ID}
+        ports:
+            - "80:80"
+        networks: 
+            - web
+            - default
+        depends_on: 
+            - redis
+            - db
+
+    deadlines_bot:
+        build:
+            context: ./src/deadlines_bot
+            dockerfile: ./src/deadlines_bot/Dockerfile
+        environment:
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+            - SAILORE_BX_BOT=${SAILORE_BX_BOT}
+            - SAILORE_PARROT_BOT=${SAILORE_PARROT_BOT}
+            - SAILORE_COMMITTEE_BOT=${SAILORE_COMMITTEE_BOT}
+            - CALENDAR_ID=${CALENDAR_ID}
+
+    redis:
+        image: redis
+
+    db:
+        image: mariadb
+        container_name: sailore-db
+        environment:
+            MYSQL_DATABASE: 'db'
+            MYSQL_ROOT_PASSWORD: 'root'
+            MYSQL_PASSWORD: 'password'
+            MYSQL_USER: 'user'
+        volumes:
+            - mariadb-data:/var/lib/mysql
+
+volumes:
+    mariadb-data:
+    
+networks:
+    web:
+        external: true

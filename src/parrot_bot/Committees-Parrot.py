@@ -4,25 +4,12 @@ import random
 import string
 import telegram.error
 import enum
-from dotenv import load_dotenv
-import os
 
 from telegram_bot_calendar import WYearTelegramCalendar, LSTEP
 from utils import db, gc
 import utils
 
-from telegram import __version__ as TG_VER
-try:
-    from telegram import __version_info__
-except ImportError:
-    __version_info__ = (0, 0, 0, 0, 0)  # type: ignore[assignment]
-
-if __version_info__ < (20, 0, 0, "alpha", 1):
-    raise RuntimeError(
-        f"This example is not compatible with your current PTB version {TG_VER}. To view the "
-        f"{TG_VER} version of this example, "
-        f"visit https://docs.python-telegram-bot.org/en/v{TG_VER}/examples.html"
-    )
+utils.Vcheck.telegram()
 from telegram import Update, Bot, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.constants import ParseMode
 from telegram.ext import (
@@ -36,7 +23,8 @@ from telegram.ext import (
     CallbackContext
 )
 
-
+from dotenv import load_dotenv
+import os
 load_dotenv()
 
 COMMITTEES_TOKEN = os.getenv("SAILORE_COMMITTEE_BOT")
@@ -46,14 +34,7 @@ SAILORE_TOKEN = os.getenv("SAILORE_BX_BOT")
 with open(utils.config.ROOT + '/data/Committees/committees.json') as f:
     committees = json.load(f)
 
-
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
-# set higher logging level for httpx to avoid all GET and POST requests being logged
-logging.getLogger("httpx").setLevel(logging.WARNING)
-
-logger = logging.getLogger(__name__)
+utils.logger(__name__)
 
 class Activity(enum.Enum):
     HOME = 1
@@ -450,6 +431,8 @@ class Event_handler:
                                           reply_markup=self.time_picker.keyboard)
             return self.state.MODIFY_EVENT
 
+
+
     async def create(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         calendar, step = WYearTelegramCalendar().build()
 
@@ -533,6 +516,7 @@ class Event_handler:
         await query.edit_message_text(text=f"The event has been uploaded to the google calendar, users will be able to see it on your committee part of SailoreBXBot two weeks prior to the event")
         gc.create_event(self.date, self.start_time, self.end_time, self.active_committee, self.name, self.description)
         return self.state.HUB
+
 
 class Access_handler:
     def __init__(self, active_committee):

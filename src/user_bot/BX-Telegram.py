@@ -1,34 +1,20 @@
-import logging
 import re
 import time
-import json
-from dotenv import load_dotenv
-import os
 import math
 import Lore
 import Committees
-from utils import db, config
 import utils
-import Committees.intro
 
+from dotenv import load_dotenv
+import os
 load_dotenv()
 BOT_TOKEN = os.getenv("SAILORE_BX_BOT")
 
+import json
 with open(utils.config.ROOT + '/data/Initial.json', encoding='utf-8') as f:
     texts = json.load(f)
 
-from telegram import __version__ as TG_VER
-try:
-    from telegram import __version_info__
-except ImportError:
-    __version_info__ = (0, 0, 0, 0, 0)  # type: ignore[assignment]
-
-if __version_info__ < (20, 0, 0, "alpha", 1):
-    raise RuntimeError(
-        f"This example is not compatible with your current PTB version {TG_VER}. To view the "
-        f"{TG_VER} version of this example, "
-        f"visit https://docs.python-telegram-bot.org/en/v{TG_VER}/examples.html"
-    )
+utils.Vcheck.telegram()
 from telegram import Update
 from telegram.ext import (
     Application,
@@ -40,14 +26,8 @@ from telegram.ext import (
     CallbackQueryHandler,
 )
 
-# Enable logging
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
-# set higher logging level for httpx to avoid all GET and POST requests being logged
-logging.getLogger("httpx").setLevel(logging.WARNING)
 
-logger = logging.getLogger(__name__)
+logger = utils.logger(__name__)
 
 INITIAL, LORE, CONTINUE, COMMITTEES = range(4)
 
@@ -62,7 +42,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
         time.sleep(message_wait(message))
         await context.bot.send_message(chat_id=update.effective_chat.id, text=message)
-    db.add_to_db(update.effective_user)
+    utils.db.add_to_db(update.effective_user)
     return INITIAL
 
 async def generic(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -88,13 +68,12 @@ def main() -> None:
     # Create the Application and pass it your bot's token.
     application = Application.builder().token(BOT_TOKEN).build()
     members = Lore.Members()
-    gemhandler = Lore.GemHandler()
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start), MessageHandler(filters.TEXT, start)],
         states={
             INITIAL: [ 
                 #Initial state of the bot in which it can be asked about gems, the lore and committees
-                gemhandler.handler,
+                Lore.GemHandler.handler,
                 MessageHandler(
                     filters.Regex(re.compile(r"l'?ore", re.IGNORECASE)), members.intro
                 ),

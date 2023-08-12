@@ -1,6 +1,6 @@
 import re
 import time
-from utils import config, db, gc
+from utils import config, db
 import datetime
 from telegram import ReplyKeyboardMarkup, Update
 from telegram.constants import ParseMode
@@ -11,7 +11,8 @@ from telegram.ext import (
     MessageHandler,
     filters,
 )
-from Committees import base
+from user_bot.Committees import base
+
 r = config.r
 
 class Bar(base.Committee):
