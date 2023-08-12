@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 import os
 load_dotenv()
 BOT_TOKEN = os.getenv("SAILORE_BX_BOT")
-
+gc_id = int(os.getenv("GC_ID"))
 import json
 with open(utils.config.ROOT + '/data/Initial.json', encoding='utf-8') as f:
     texts = json.load(f)
@@ -30,7 +30,7 @@ from telegram.ext import (
 
 logger = bx_utils.logger(__name__)
 
-INITIAL, LORE, CONTINUE, COMMITTEES = range(4)
+INITIAL, LORE, CONTINUE, COMMITTEES, REQUEST = range(5)
 
 
 
@@ -62,6 +62,18 @@ async def generic(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await context.bot.send_message(chat_id=update.effective_chat.id, text=message)
     return INITIAL
 
+async def request(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Allow users to input requests"""
+    await context.bot.send_message(chat_id=update.effective_chat.id,
+                                   text="What do you want to tell the tech support")
+    return REQUEST
+
+async def manage_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    request = update.message.text
+    await context.bot.send_message(chat_id=update.effective_chat.id,
+                                   text="The support has been informed and it will be taken into consideration")
+    await context.bot.send_message(chat_id=gc_id,
+                                   text=f'Request from {update.effective_user.name}: \n{request}')
 
 
 def main() -> None:
@@ -81,6 +93,7 @@ def main() -> None:
                 MessageHandler(
                     filters.Regex(re.compile(r"com+it+e+s?", re.IGNORECASE)), Committees.intro #added the question marks cuz people tend to mispell this word
                 ),
+                CommandHandler("request", request),
                 MessageHandler(filters.TEXT, generic)
             ],
             LORE: [
@@ -91,7 +104,10 @@ def main() -> None:
                 #State of the bot in which it is asked if it wants to continue asking about sailore members
                 CallbackQueryHandler(members.more)
             ],
-            COMMITTEES:  Committees.committees
+            COMMITTEES:  Committees.committees,
+            REQUEST: [
+                MessageHandler(filters.TEXT, manage_request)
+            ]
         },
         fallbacks=[MessageHandler(filters.TEXT, generic)],
         per_chat=False
