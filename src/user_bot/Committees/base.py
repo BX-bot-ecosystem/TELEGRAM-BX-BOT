@@ -28,39 +28,44 @@ class Committee:
         ]
         self.MARKUP = ReplyKeyboardMarkup(self.reply_keyboard, one_time_keyboard=True)
         self.EXIT, self.HOME, self.SUB, self.UNSUB, self.BOARD = range(5)
+        if "info" in self.info["messages"].keys():
+            home_handlers.append(CommandHandler("info", self.about))
+        if "groupchat" in self.info["messages"].keys():
+            home_handlers.append(CommandHandler("groupchat", self.groupchat))
         self.states = {**{
-                self.HOME: [
-                    MessageHandler(
-                        filters.Regex(re.compile(r'board', re.IGNORECASE)), self.board
-                    ),
-                    CommandHandler("sub", self.manage_sub),
-                    CommandHandler("event", self.get_events),
-                    CommandHandler("exit", self.exit)
-                ] + (home_handlers if home_handlers else []),
-                self.BOARD: [
-                    CallbackQueryHandler(self.board_selection)
-                ],
-                self.SUB: [
-                    MessageHandler(
-                        filters.Regex(re.compile(r'yay', re.IGNORECASE)), self.sub
-                    )
-                ],
-                self.UNSUB: [
-                    MessageHandler(
-                        filters.Regex(re.compile(r'yay', re.IGNORECASE)), self.unsub
-                    )
-                ]
-            }, **(extra_states if extra_states else {})}
+            self.HOME: [
+                           MessageHandler(
+                               filters.Regex(re.compile(r'board', re.IGNORECASE)), self.board
+                           ),
+                           CommandHandler("sub", self.manage_sub),
+                           CommandHandler("event", self.get_events),
+                           CommandHandler("exit", self.exit),
+                           CommandHandler("help", self.help)
+                       ] + (home_handlers if home_handlers else []),
+            self.BOARD: [
+                CallbackQueryHandler(self.board_selection)
+            ],
+            self.SUB: [
+                MessageHandler(
+                    filters.Regex(re.compile(r'yay', re.IGNORECASE)), self.sub
+                )
+            ],
+            self.UNSUB: [
+                MessageHandler(
+                    filters.Regex(re.compile(r'yay', re.IGNORECASE)), self.unsub
+                )
+            ]
+        }, **(extra_states if extra_states else {})}
         self.handler = ConversationHandler(
             entry_points=[CommandHandler(self.info["command"][1:], self.intro)],
             states=self.states,
-            fallbacks=[MessageHandler(filters.TEXT, self.intro)],
+            fallbacks=[MessageHandler(filters.TEXT, self.predetermined)],
             map_to_parent={
                 # Connection to the parent handler, note that its written EXIT: EXIT where both of these are equal to 0, that's why it leads to INITIAL which is also equal to 0
                 self.EXIT: self.EXIT
             }
         )
-    
+
     async def intro(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         """Intro for the bar"""
         try:
@@ -71,6 +76,7 @@ class Committee:
             await self.send_message(update, context, text="In here you can learn about our board, get the link to join our groupchat, find out about our next events and even subscribe to our notifications from this bot")
             await self.send_message(update, context, text="To exit this section of the bot just use the command /exit")
         return self.HOME
+
     def create_balanced_layout(self):
         names = [name for name in self.info["board"].keys() if 'message' in self.info["board"][name].keys()]
         total_members = len(names)
@@ -111,6 +117,7 @@ class Committee:
         time.sleep(len(message) / 140)
         await query.edit_message_text(text=message)
         await self.send_message(update, context, text='Do you want to learn more about any other members?', reply_markup=self.board_keyboard)
+
     async def board(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         """Introduces the board"""
         await self.send_message(update, context, text=f"Voici the members of the {self.name} board:\n" + self.board_members)
@@ -139,9 +146,9 @@ class Committee:
         user_info['subs'] = subs
         utils.config.r.hset(utils.db.user_to_key(update.effective_user), mapping=user_info)
         await self.send_message(update, context,
-                                       text=f'You have been subscribed to {self.name}')
+                                text=f'You have been subscribed to {self.name}')
         await self.send_message(update, context,
-                                       text='In order to receive communications interact at least once with t.me/SailoreParrotBot')
+                                text='In order to receive communications interact at least once with t.me/SailoreParrotBot')
         return self.HOME
 
     async def unsub(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -153,7 +160,7 @@ class Committee:
         utils.config.r.hset(utils.db.user_to_key(update.effective_user), mapping=user_info)
         await self.send_message(update, context, text=f'You have been unsubscribed to {self.name}')
         return self.HOME
-    
+
     async def manage_sub(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         """Checks if the user is subscribed and allows it to toogle it"""
         user_info = utils.db.r.hgetall(utils.db.user_to_key(update.effective_user))
@@ -168,7 +175,7 @@ class Committee:
             await self.send_message(update, context, text='Doing so will mean that you will receive their communications through our associated bot @SailoreParrotBot')
             await self.send_message(update, context, text='Do you wish to subscribe?', reply_markup=self.MARKUP)
             return self.SUB
-    
+
     async def get_events(self, update:Update, context: ContextTypes.DEFAULT_TYPE):
         time_now = datetime.datetime.now()
         two_weeks_from_now = time_now + datetime.timedelta(days = 14)
@@ -184,7 +191,33 @@ class Committee:
             await self.send_message(update, context, text="The events already planned are:")
             await self.send_message(update, context, text=message, parse_mode=ParseMode.HTML)
         return self.HOME
-    
+
+    async def about(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        for message in self.info["messages"]["info"]:
+            await self.send_message(update, context, message)
+        return self.HOME
+
+    async def groupchat(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        for message in self.info["messages"]["groupchat"]:
+            await self.send_message(update, context, message)
+        return self.HOME
+
+    async def help(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        try:
+            for message in self.info["messages"]["help"]:
+                await self.send_message(update, context, message)
+        except KeyError:
+            await self.send_message(update, context, f"You are in {self.name} bot section")
+            await self.send_message(update, context, f"Over here you can learn about their /board, their incoming /event or /sub to their communications")
+        return self.HOME
+
+    async def predetermined(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        try:
+            for message in self.info["messages"]["predetermined"]:
+                await self.send_message(update, context, message)
+        except KeyError:
+            await self.send_message(update, context, "I didn't understand what you mean, you can always ask for /help")
+
     @staticmethod
     async def send_message(update: Update, context: ContextTypes.DEFAULT_TYPE, text, parse_mode=None, reply_markup=None):
         await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
