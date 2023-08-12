@@ -38,7 +38,10 @@ def add_to_db(user):
         'fullname': user.full_name,
         'id': user.id,
         'subs': '', #comma separated list as redis has to store everything as strings
-        'rights': ''
+        'rights': '',
+        'reminders': '',
+        'deadlines': '',
+        'gems': '0'
     }
     r.hset(key, mapping=info)
 
