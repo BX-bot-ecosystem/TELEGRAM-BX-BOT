@@ -8,7 +8,8 @@ from utils import config
 import datetime
 
 load_dotenv()
-CALENDAR_ID = os.getenv("CALENDAR_ID")
+EVENT_CALENDAR_ID = os.getenv("EVENT_CALENDAR_ID")
+DEADLINE_CALENDAR_ID = os.getenv("DEADLINE_CALENDAR_ID")
 # The scopes define the level of access your bot will have to the shared calendar.
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
@@ -62,15 +63,23 @@ def changeTime(formatted_time, new_time, next_day):
         date = str(date_obj)
     return date + 'T' + new_time + ':00'
 
-def deleteEvent(event):
+def deleteEvent(event, deadline=False):
+    if deadline:
+        calendar_id = DEADLINE_CALENDAR_ID
+    else:
+        calendar_id = EVENT_CALENDAR_ID
     service = get_calendar_service()
-    service.events().delete(calendarId=CALENDAR_ID, eventId=event["id"]).execute()
+    service.events().delete(calendarId=calendar_id, eventId=event["id"]).execute()
 
 def timeFormat(date, time):
 
     return str(date) + 'T' + time + ':00'
 
-def create_event(date, startTime, endTime, committee, name, description):
+def create_event(date, startTime, endTime, committee, name, description, deadline = False):
+    if deadline:
+        calendar_id = DEADLINE_CALENDAR_ID
+    else:
+        calendar_id = EVENT_CALENDAR_ID
     service = get_calendar_service()
     startDate = timeFormat(date, startTime)
     if endTime < startTime:
@@ -96,13 +105,17 @@ def create_event(date, startTime, endTime, committee, name, description):
         "colorId": color_from_committee(committee)
     }
     # Use the service to create an event in the shared calendar.
-    event = service.events().insert(calendarId=CALENDAR_ID, body=event_data).execute()
+    event = service.events().insert(calendarId=calendar_id, body=event_data).execute()
     return event
 
-def get_events():
+def get_events(deadline=False):
+    if deadline:
+        calendar_id = DEADLINE_CALENDAR_ID
+    else:
+        calendar_id = EVENT_CALENDAR_ID
     service = get_calendar_service()
     # Use the service to retrieve events from the shared calendar.
-    events_result = service.events().list(calendarId=CALENDAR_ID).execute()
+    events_result = service.events().list(calendarId=calendar_id).execute()
     events = events_result.get("items", [])
     return events
 
@@ -116,7 +129,7 @@ def get_committee_events(committee, time_max=None):
     query_params = {}
     if time_max is not None:
         query_params['timeMax'] = time_max
-    events_result = service.events().list(calendarId=CALENDAR_ID, timeMin=time_min, **query_params).execute()
+    events_result = service.events().list(calendarId=EVENT_CALENDAR_ID, timeMin=time_min, **query_params).execute()
     committee_events = [
         event for event in events_result['items']
         if event.get('extendedProperties', {}).get('shared', {}).get('committee') == committee
@@ -136,13 +149,17 @@ COLOR_ID = {'Lavender': '1',
           'Tomato': '11'
           }
 
-def update_event(event_data):
+def update_event(event_data, deadline = False):
     """
     Updates an event given its event data
     """
+    if deadline:
+        calendar_id = DEADLINE_CALENDAR_ID
+    else:
+        calendar_id = EVENT_CALENDAR_ID
     event_id = event_data["id"]
     service = get_calendar_service()
-    service.events().update(calendarId=CALENDAR_ID, eventId=event_id, body=event_data).execute()
+    service.events().update(calendarId=calendar_id, eventId=event_id, body=event_data).execute()
 
 def color_from_committee(committee_name):
     """
@@ -162,6 +179,6 @@ def event_presentation_from_api(event_data):
     _ , end_time = event_data["end"]["dateTime"].split('T')
     start = start_time[:5]
     end = end_time[:5]
-    return event_presentation_from_data(committee, date, name, start, end, description)
-def event_presentation_from_data(committee, date, name, start, end, description):
-    return f"{committee} is organizing <b>{name}</b> on the {format_date(date)} {start}-{end}\n{description}"
+    return event_presentation_from_data(date, name, start, end, description)
+def event_presentation_from_data(date, name, start, end, description):
+    return f"<b>{name}</b> on the {format_date(date)} {start}-{end}\n{description}"

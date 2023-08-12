@@ -1,3 +1,4 @@
+import logging
 import json
 import random
 import string
@@ -25,9 +26,10 @@ from telegram.ext import (
 from dotenv import load_dotenv
 import os
 load_dotenv()
-COMMITTEES_TOKEN = os.getenv("SailoreCommitteesBot")
-PARROT_TOKEN = os.getenv("SailoreParrotBot")
-SAILORE_TOKEN = os.getenv("SailoreBXBot")
+
+COMMITTEES_TOKEN = os.getenv("SAILORE_COMMITTEE_BOT")
+PARROT_TOKEN = os.getenv("SAILORE_PARROT_BOT")
+SAILORE_TOKEN = os.getenv("SAILORE_BX_BOT")
 
 with open(utils.config.ROOT + '/data/Committees/committees.json') as f:
     committees = json.load(f)
