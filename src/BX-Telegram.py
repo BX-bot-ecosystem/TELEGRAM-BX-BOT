@@ -4,6 +4,7 @@ import math
 import Lore
 import Committees
 import utils
+import bx_utils
 
 from dotenv import load_dotenv
 import os
@@ -14,7 +15,7 @@ import json
 with open(utils.config.ROOT + '/data/Initial.json', encoding='utf-8') as f:
     texts = json.load(f)
 
-utils.Vcheck.telegram()
+bx_utils.Vcheck.telegram()
 from telegram import Update
 from telegram.ext import (
     Application,
@@ -27,7 +28,7 @@ from telegram.ext import (
 )
 
 
-logger = utils.logger(__name__)
+logger = bx_utils.logger(__name__)
 
 INITIAL, LORE, CONTINUE, COMMITTEES, REQUEST = range(5)
 
@@ -42,7 +43,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
         time.sleep(message_wait(message))
         await context.bot.send_message(chat_id=update.effective_chat.id, text=message)
-    utils.db.add_to_db(update.effective_user)
+    bx_utils.db.add_to_db(update.effective_user)
     return INITIAL
 
 async def generic(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
