@@ -14,6 +14,7 @@ import datetime
 import math
 
 
+import bx_utils
 import utils
 
 
@@ -142,12 +143,12 @@ class Committee:
             return self.EXIT
 
     async def sub(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-        user_info = utils.config.r.hgetall(utils.db.user_to_key(update.effective_user))
-        sub_list = utils.db.db_to_list(user_info['subs'])
+        user_info = bx_utils.config.r.hgetall(bx_utils.db.user_to_key(update.effective_user))
+        sub_list = bx_utils.db.db_to_list(user_info['subs'])
         sub_list.append(self.name)
-        subs = utils.db.list_to_db(sub_list)
+        subs = bx_utils.db.list_to_db(sub_list)
         user_info['subs'] = subs
-        utils.config.r.hset(utils.db.user_to_key(update.effective_user), mapping=user_info)
+        bx_utils.config.r.hset(bx_utils.db.user_to_key(update.effective_user), mapping=user_info)
         await self.send_message(update, context,
                                 text=f'You have been subscribed to {self.name}')
         await self.send_message(update, context,
@@ -155,19 +156,19 @@ class Committee:
         return self.HOME
 
     async def unsub(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-        user_info = utils.config.r.hgetall(utils.db.user_to_key(update.effective_user))
-        sub_list = utils.db.db_to_list(user_info['subs'])
+        user_info = bx_utils.config.r.hgetall(bx_utils.db.user_to_key(update.effective_user))
+        sub_list = bx_utils.db.db_to_list(user_info['subs'])
         sub_list.remove(self.name)
-        subs = utils.db.list_to_db(sub_list)
+        subs = bx_utils.db.list_to_db(sub_list)
         user_info['subs'] = subs
-        utils.config.r.hset(utils.db.user_to_key(update.effective_user), mapping=user_info)
+        bx_utils.config.r.hset(bx_utils.db.user_to_key(update.effective_user), mapping=user_info)
         await self.send_message(update, context, text=f'You have been unsubscribed to {self.name}')
         return self.HOME
 
     async def manage_sub(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         """Checks if the user is subscribed and allows it to toogle it"""
-        user_info = utils.db.r.hgetall(utils.db.user_to_key(update.effective_user))
-        sub_list = utils.db.db_to_list(user_info["subs"])
+        user_info = bx_utils.db.r.hgetall(bx_utils.db.user_to_key(update.effective_user))
+        sub_list = bx_utils.db.db_to_list(user_info["subs"])
         if self.name in sub_list:
             await self.send_message(update, context, text='It seems like you are already subscribed to this committee')
             await self.send_message(update, context, text='This means that you will receive their communications through our associated bot @SailoreParrotBot')
@@ -183,10 +184,10 @@ class Committee:
         time_now = datetime.datetime.now()
         two_weeks_from_now = time_now + datetime.timedelta(days = 14)
         time_max = two_weeks_from_now.isoformat() + 'Z'
-        events = utils.gc.get_committee_events(self.name, time_max=time_max)
+        events = bx_utils.gc.get_committee_events(self.name, time_max=time_max)
         event_descriptions = []
         for item in events:
-            event_descriptions.append(utils.gc.event_presentation_from_api(item))
+            event_descriptions.append(bx_utils.gc.event_presentation_from_api(item))
         message = '\n -------------------------------------- \n'.join(event_descriptions)
         if len(event_descriptions) == 0:
             await self.send_message(update, context, text=f"{self.name} has no events planned in the near future")
