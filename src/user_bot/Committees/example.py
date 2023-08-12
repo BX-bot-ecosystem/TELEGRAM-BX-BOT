@@ -1,4 +1,4 @@
-from user_bot.Committees import base
+from . import base
 
 
 class Example(base.Committee):

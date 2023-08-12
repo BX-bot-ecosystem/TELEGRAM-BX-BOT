@@ -11,7 +11,7 @@ from telegram.ext import (
     MessageHandler,
     filters,
 )
-from user_bot.Committees import base
+from . import base
 
 r = config.r
 
