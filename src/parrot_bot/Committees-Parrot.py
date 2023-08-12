@@ -42,6 +42,7 @@ class Activity(enum.Enum):
     VERIFICATION = 3
     HUB = 4
     MESSAGE = 5
+    MESSAGE_CONFIRMATION = 16
     ACCESS = 6
     RIGHTS = 7
     EVENT = 8
@@ -517,7 +518,6 @@ class Event_handler:
         gc.create_event(self.date, self.start_time, self.end_time, self.active_committee, self.name, self.description)
         return self.state.HUB
 
-
 class Access_handler:
     def __init__(self, active_committee):
         self.active_committee = active_committee
@@ -610,15 +610,87 @@ class Access_handler:
         await query.edit_message_text(text=message[state], reply_markup=keyboard)
         return self.state.RIGHTS
 
+class Message_handler:
+    def __init__(self, active_committee):
+        self.active_committee = active_committee
+        self.state = Activity.MESSAGE
+        self.user_rights = None
+        self.message_text = ''
+
+        self.message_handler = ConversationHandler(
+            entry_points=[CommandHandler("message", self.message)],
+            states={
+                self.state.MESSAGE: [MessageHandler(filters.TEXT, self.confirm)],
+                self.state.MESSAGE_CONFIRMATION: [CallbackQueryHandler(self.parrot)]
+            },
+            fallbacks=[MessageHandler(filters.TEXT, self.back)],
+            map_to_parent={
+                self.state.HUB: self.state.HUB
+            }
+        )
+    async def message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        if self.user_rights == 'Events':
+            await context.bot.send_message(chat_id=update.effective_chat.id,
+                                           text="You don't have access rights for this functionality")
+            return self.state.HUB
+        await context.bot.send_message(chat_id=update.effective_user.id,
+                                       text="What message do you wish to send to your subscriptors?")
+        return self.state.MESSAGE
+
+    async def confirm(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.message_text = update.message.text
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton('yay', callback_data='yay')],
+            [InlineKeyboardButton('nay', callback_data='nay')]
+        ])
+        await context.bot.send_message(chat_id=update.effective_chat.id,
+                                       text="Do you want to parrot this message to all your subs?",
+                                       reply_markup= reply_markup)
+        return self.state.MESSAGE_CONFIRMATION
+
+    async def parrot(self, update: Update, context: CallbackContext):
+        query = update.callback_query
+        await query.answer()
+        if query.data == 'nay':
+            await query.edit_message_text(text='Alright, back to the hub')
+            return self.state.HUB
+
+        keys = db.subs_of_committee(self.active_committee)
+        users_info = db.get_users_info(keys)
+        parrot_bot = Bot(PARROT_TOKEN)
+        sailore_bot = Bot(SAILORE_TOKEN)
+        counter = 0
+        for user in users_info:
+            try:
+                await parrot_bot.send_message(chat_id=user['id'],
+                                               text=f'Hello {user["name"]}, this is a communication from {self.active_committee}:')
+                await parrot_bot.send_message(chat_id=user['id'], text=self.message_text)
+            except telegram.error.BadRequest:
+                counter += 1
+                await sailore_bot.send_message(chat_id=user['id'],
+                    text=f"""Hello {user['name']}, a communication from one of your subscriptions was just sent to you but you didn't receive it as you haven't signed in into t.me/SailoreParrotBot""")
+        await context.bot.send_message(chat_id=update.effective_user.id,
+                                       text="Successfully echoed your message")
+        if counter > 0:
+            await context.bot.send_message(chat_id=update.effective_user.id,
+                                           text=f"We also notified {counter} of your users which didn't sign into @SailoreParrotBot")
+        return self.state.HUB
+
+    async def back(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        await context.bot.send_message(chat_id=update.effective_chat.id,
+                                       text="You are back to the hub")
+        return self.state.HUB
+
 class Committee_hub:
     def __init__(self, active_committee):
         self.active_committee = active_committee
         self.state = Activity.HUB
         self.access_handler = Access_handler(active_committee)
         self.event_handler = Event_handler(active_committee)
+        self.message_handler = Message_handler(active_committee)
         self.user_rights = None
         hub_handlers = [CommandHandler("subs", self.give_subs),
-                        CommandHandler("message", self.message),
+                        self.message_handler.message_handler,
                         self.event_handler.event_handler,
                         self.access_handler.access_handler,
                         CommandHandler("logout", self.logout),
@@ -638,6 +710,7 @@ class Committee_hub:
         self.user_rights = db.get_committee_access(self.active_committee)[str(update.effective_user.id)]
         self.access_handler.user_rights = self.user_rights
         self.event_handler.user_rights = self.user_rights
+        self.message_handler.user_rights = self.user_rights
         await context.bot.send_message(chat_id=update.effective_user.id,
                                        text=f"You are logged into {self.active_committee} as {self.user_rights}")
         if self.user_rights == 'Prez':
