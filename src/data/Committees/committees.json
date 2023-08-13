@@ -48,5 +48,9 @@
     "ClimbX": {
         "name": "ClimbX \uD83E\uDDD7\uD83E\uDDD7",
         "command": "/climbx"
+    },
+    "Xcinema": {
+        "name": "Xcinema",
+        "command": "/cinema"
     }
 }
