@@ -51,6 +51,12 @@
     },
     "Xcinema": {
         "name": "Xcinema",
-        "command": "/cinema"
+        "command": "/cinema",
+        "board": {
+            "Manon": {"role": "Prez"},
+            "Anna": {"role": "VP"},
+            "Gianluca": {"role": "VP"},
+            "Aditya": {"role": "Trez"}
+        }
     }
 }
