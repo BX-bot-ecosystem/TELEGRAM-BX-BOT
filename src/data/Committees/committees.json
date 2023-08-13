@@ -43,7 +43,11 @@
     },
     "PhysiX": {
         "name": "PhysiX \uFE0F",
-        "command": "/physix"
+        "command": "/physix",
+        "board": {
+            "TestPerson 1": {"role":  "Prez"},
+            "TestPerson 2": {"role":  "VP"}
+        }
     },
     "ClimbX": {
         "name": "ClimbX \uD83E\uDDD7\uD83E\uDDD7",
