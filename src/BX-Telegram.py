@@ -12,6 +12,7 @@ import os
 load_dotenv()
 BOT_TOKEN = os.getenv("SAILORE_BX_BOT")
 gc_id = int(os.getenv("GC_ID"))
+ids = os.getenv("IDS")
 import json
 with open(utils.config.ROOT + '/data/Initial.json', encoding='utf-8') as f:
     texts = json.load(f)
@@ -91,7 +92,7 @@ def get_committees_with_program():
 
 async def master(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Master access for management of important things"""
-    if update.effective_chat.id != gc_id:
+    if not str(update.effective_chat.id) in ids:
         return generic(update, context)
     await context.bot.send_message(chat_id=update.effective_chat.id,
                                    text="Succesfully entered the master admin lord of the bots mode")
@@ -166,9 +167,10 @@ def main() -> None:
     application = Application.builder().token(BOT_TOKEN).build()
     members = Lore.Members()
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("start", start), CommandHandler("master", master), MessageHandler(filters.TEXT, start)],
+        entry_points=[CommandHandler("start", start), MessageHandler(filters.TEXT, start)],
         states={
-            INITIAL: [ 
+            INITIAL: [
+                CommandHandler("master", master),
                 #Initial state of the bot in which it can be asked about gems, the lore and committees
                 Lore.GemHandler.handler,
                 MessageHandler(
