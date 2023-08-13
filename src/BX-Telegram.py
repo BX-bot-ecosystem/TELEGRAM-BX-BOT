@@ -1,6 +1,8 @@
 import re
 import time
 import math
+import random
+import string
 import Lore
 import Committees
 import utils
@@ -84,11 +86,14 @@ async def manage_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def get_committees_with_json():
     with open('./data/Committees/committees.json') as file:
         committees = json.load(file)
-    return list(committees.keys())
+    json_file = list(committees.keys())
+    json_file.sort()
+    return json_file
 
 def get_committees_with_program():
-    names = [committee.name for committee in Committees._temp]
-    return names
+    program = Committees.names
+    program.sort()
+    return program
 
 async def master(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Master access for management of important things"""
@@ -99,19 +104,21 @@ async def master(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id,
                                    text="From here you can check the committees /status or get a new /password for a given committee")
 
-    return INITIAL
+    return MASTER
 
 async def status(update:Update, context: ContextTypes.DEFAULT_TYPE):
     program = bx_utils.db.list_to_telegram(get_committees_with_program())
     json_file = bx_utils.db.list_to_telegram(get_committees_with_json())
     await context.bot.send_message(chat_id=update.effective_chat.id,
-                                   text=f"These committees have a program: {program} \n and these committees have a json file: {json_file}")
+                                   text=f"These committees have a program: \n{program}")
+    await context.bot.send_message(chat_id=update.effective_chat.id,
+                                   text=f"These committees have a json file: \n{json_file}")
     return MASTER
 async def password(update: Update, context: ContextTypes.DEFAULT_TYPE):
     committees_without_access = []
     for name in get_committees_with_program():
         access = bx_utils.db.get_committee_access(name)
-        if access == []:
+        if access == {}:
             committees_without_access.append(name)
     reply_markup = create_keyboard(committees_without_access)
     if reply_markup is None:
@@ -127,8 +134,9 @@ async def receive_pass(update: Update, context: CallbackContext):
     query = update.callback_query
     await query.answer()
     committee_name = query.data
-    password = bx_utils.db.get_pass_committee(committee_name)
-    query.edit_message_text(text=password)
+    new_password = committee_name + ':' + ''.join(random.choices(string.digits + string.ascii_letters, k=10))
+    bx_utils.db.add_one_time_pass(new_password, committee_name)
+    await query.edit_message_text(text=new_password)
     return INITIAL
 
 
