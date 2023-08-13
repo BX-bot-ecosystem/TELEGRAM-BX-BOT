@@ -59,6 +59,7 @@ async def generic(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     else:
         text = texts["predetermined"]
     for message in text:
+        bx_utils.db.add_to_db(update.effective_user)
         await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
         time.sleep(message_wait(message))
         await context.bot.send_message(chat_id=update.effective_chat.id, text=message)
