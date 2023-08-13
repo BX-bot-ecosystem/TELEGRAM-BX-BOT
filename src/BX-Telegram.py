@@ -17,7 +17,7 @@ with open(utils.config.ROOT + '/data/Initial.json', encoding='utf-8') as f:
     texts = json.load(f)
 
 bx_utils.Vcheck.telegram()
-from telegram import Update
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -26,12 +26,13 @@ from telegram.ext import (
     MessageHandler,
     filters,
     CallbackQueryHandler,
+    CallbackContext
 )
 
 
 logger = bx_utils.logger(__name__)
 
-INITIAL, LORE, CONTINUE, COMMITTEES, REQUEST = range(5)
+INITIAL, LORE, CONTINUE, COMMITTEES, REQUEST, MASTER, MASTER_PASS = range(7)
 
 
 
@@ -72,12 +73,91 @@ async def request(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return REQUEST
 
 async def manage_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    request = update.message.text
+    request_made = update.message.text
     await context.bot.send_message(chat_id=update.effective_chat.id,
                                    text="The support has been informed and it will be taken into consideration")
     await context.bot.send_message(chat_id=gc_id,
-                                   text=f'Request from {update.effective_user.name}: \n{request}')
+                                   text=f'Request from {update.effective_user.name}: \n{request_made}')
     return INITIAL
+
+def get_committees_with_json():
+    with open('./data/Committees/committees.json') as file:
+        committees = json.load(file)
+    return list(committees.keys())
+
+def get_committees_with_program():
+    names = [committee.name for committee in Committees._temp]
+    return names
+
+async def master(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Master access for management of important things"""
+    if update.effective_chat.id != gc_id:
+        return generic(update, context)
+    await context.bot.send_message(chat_id=update.effective_chat.id,
+                                   text="Succesfully entered the master admin lord of the bots mode")
+    await context.bot.send_message(chat_id=update.effective_chat.id,
+                                   text="From here you can check the committees /status or get a new /password for a given committee")
+
+    return INITIAL
+
+async def status(update:Update, context: ContextTypes.DEFAULT_TYPE):
+    program = bx_utils.db.list_to_telegram(get_committees_with_program())
+    json_file = bx_utils.db.list_to_telegram(get_committees_with_json())
+    await context.bot.send_message(chat_id=update.effective_chat.id,
+                                   text=f"These committees have a program: {program} \n and these committees have a json file: {json_file}")
+    return MASTER
+async def password(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    committees_without_access = []
+    for name in get_committees_with_program():
+        access = bx_utils.db.get_committee_access(name)
+        if access == []:
+            committees_without_access.append(name)
+    reply_markup = create_keyboard(committees_without_access)
+    if reply_markup is None:
+        await context.bot.send_message(chat_id=update.effective_chat.id,
+                                       text=f"All accessible committees have access established")
+        return INITIAL
+    await context.bot.send_message(chat_id=update.effective_chat.id,
+                                   text=f"These committeees don't have access: {committees_without_access}",
+                                   reply_markup=reply_markup)
+    return MASTER_PASS
+
+async def receive_pass(update: Update, context: CallbackContext):
+    query = update.callback_query
+    await query.answer()
+    committee_name = query.data
+    password = bx_utils.db.get_pass_committee(committee_name)
+    query.edit_message_text(text=password)
+    return INITIAL
+
+
+def create_balanced_layout(names):
+    total_members = len(names)
+    ideal_group_size = math.isqrt(total_members)
+    if names == []:
+        return None
+    remainder = total_members % ideal_group_size
+
+    groups = [names[i:i + ideal_group_size] for i in range(0, total_members - remainder, ideal_group_size)]
+
+    # Distribute the remaining members across the groups
+    for i in range(remainder):
+        groups[i].append(names[total_members - remainder + i])
+
+    return groups
+
+def create_keyboard(names):
+    layout = create_balanced_layout(names)
+    if layout is None:
+        return None
+    keyboard = []
+    for name_list in layout:
+        keyboard_row = []
+        for name in name_list:
+            keyboard_row.append(InlineKeyboardButton(name, callback_data=name))
+        keyboard.append(keyboard_row)
+    keyboard.append([InlineKeyboardButton('Nay', callback_data='Nay')])
+    return InlineKeyboardMarkup(keyboard)
 
 
 def main() -> None:
@@ -86,7 +166,7 @@ def main() -> None:
     application = Application.builder().token(BOT_TOKEN).build()
     members = Lore.Members()
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("start", start), MessageHandler(filters.TEXT, start)],
+        entry_points=[CommandHandler("start", start), CommandHandler("master", master), MessageHandler(filters.TEXT, start)],
         states={
             INITIAL: [ 
                 #Initial state of the bot in which it can be asked about gems, the lore and committees
@@ -111,6 +191,13 @@ def main() -> None:
             COMMITTEES:  Committees.committees,
             REQUEST: [
                 MessageHandler(filters.TEXT, manage_request)
+            ],
+            MASTER: [
+                CommandHandler("status", status),
+                CommandHandler("password", password)
+            ],
+            MASTER_PASS: [
+                CallbackQueryHandler(receive_pass)
             ]
         },
         fallbacks=[MessageHandler(filters.TEXT, generic)],
