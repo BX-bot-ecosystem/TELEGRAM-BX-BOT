@@ -50,6 +50,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 async def generic(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Response depending on the message received"""
     message = update.message.text
+    message = message.strip('/')
     keys = texts.keys()
     for key in keys:
         if re.match(key, message.lower()):
