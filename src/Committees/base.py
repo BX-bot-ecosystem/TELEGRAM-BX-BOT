@@ -25,9 +25,9 @@ class Committee:
         self.board_members = "\n".join([f'{self.info["board"][key]["role"]}: {key}' for key in self.info["board"]])
         self.board_keyboard = self.create_keyboard()
         self.reply_keyboard = [
-            ["Yay", "Nay"],
+            [InlineKeyboardButton("Yay", callback_data='Yay'), InlineKeyboardButton("Nay",callback_data='Nay')],
         ]
-        self.MARKUP = ReplyKeyboardMarkup(self.reply_keyboard, one_time_keyboard=True)
+        self.MARKUP = InlineKeyboardMarkup(self.reply_keyboard)
         self.EXIT, self.HOME, self.SUB, self.UNSUB, self.BOARD = range(5)
         if home_handlers is None:
             home_handlers = []
@@ -50,15 +50,8 @@ class Committee:
                 CallbackQueryHandler(self.board_selection)
             ],
             self.SUB: [
-                MessageHandler(
-                    filters.Regex(re.compile(r'yay', re.IGNORECASE)), self.sub
-                )
+                CallbackQueryHandler(self.sub)
             ],
-            self.UNSUB: [
-                MessageHandler(
-                    filters.Regex(re.compile(r'yay', re.IGNORECASE)), self.unsub
-                )
-            ]
         }, **(extra_states if extra_states else {})}
         self.handler = ConversationHandler(
             entry_points=[CommandHandler(self.info["command"][1:], self.intro)],
@@ -143,27 +136,29 @@ class Committee:
             return self.EXIT
 
     async def sub(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-        user_info = bx_utils.config.r.hgetall(bx_utils.db.user_to_key(update.effective_user))
-        sub_list = bx_utils.db.db_to_list(user_info['subs'])
-        sub_list.append(self.name)
-        subs = bx_utils.db.list_to_db(sub_list)
-        user_info['subs'] = subs
-        bx_utils.config.r.hset(bx_utils.db.user_to_key(update.effective_user), mapping=user_info)
-        await self.send_message(update, context,
-                                text=f'You have been subscribed to {self.name}')
-        await self.send_message(update, context,
-                                text='In order to receive communications interact at least once with t.me/SailoreParrotBot')
-        return self.HOME
-
-    async def unsub(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-        user_info = bx_utils.config.r.hgetall(bx_utils.db.user_to_key(update.effective_user))
-        sub_list = bx_utils.db.db_to_list(user_info['subs'])
-        sub_list.remove(self.name)
-        subs = bx_utils.db.list_to_db(sub_list)
-        user_info['subs'] = subs
-        bx_utils.config.r.hset(bx_utils.db.user_to_key(update.effective_user), mapping=user_info)
-        await self.send_message(update, context, text=f'You have been unsubscribed to {self.name}')
-        return self.HOME
+        query = update.callback_query
+        await query.answer()
+        if query.data == 'Yay':
+            user_info = bx_utils.config.r.hgetall(bx_utils.db.user_to_key(update.effective_user))
+            sub_list = bx_utils.db.db_to_list(user_info['subs'])
+            sub_list.append(self.name)
+            subs = bx_utils.db.list_to_db(sub_list)
+            user_info['subs'] = subs
+            bx_utils.config.r.hset(bx_utils.db.user_to_key(update.effective_user), mapping=user_info)
+            await self.send_message(update, context,
+                                    text=f'You have been subscribed to {self.name}')
+            await self.send_message(update, context,
+                                    text='In order to receive communications interact at least once with t.me/SailoreParrotBot')
+            return self.HOME
+        if query.data == 'Nay':
+            user_info = bx_utils.config.r.hgetall(bx_utils.db.user_to_key(update.effective_user))
+            sub_list = bx_utils.db.db_to_list(user_info['subs'])
+            sub_list.remove(self.name)
+            subs = bx_utils.db.list_to_db(sub_list)
+            user_info['subs'] = subs
+            bx_utils.config.r.hset(bx_utils.db.user_to_key(update.effective_user), mapping=user_info)
+            await self.send_message(update, context, text=f'You have been unsubscribed to {self.name}')
+            return self.HOME
 
     async def manage_sub(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         """Checks if the user is subscribed and allows it to toogle it"""
