@@ -1,6 +1,5 @@
 import re
 import time
-from bx_utils import config, db
 import datetime
 from telegram import ReplyKeyboardMarkup, Update
 from telegram.constants import ParseMode
@@ -11,9 +10,10 @@ from telegram.ext import (
     MessageHandler,
     filters,
 )
+import bx_utils
 from . import base
 
-r = config.r
+r = bx_utils.config.r
 
 class Bar(base.Committee):
     def __init__(self):
@@ -96,8 +96,8 @@ class Bar_old:
     
     async def manage_sub(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         """Checks if the user is subscribed and allows it to toogle it"""
-        user_info = r.hgetall(db.user_to_key(update.effective_user))
-        sub_list = db.db_to_list(user_info["subs"])
+        user_info = r.hgetall(bx_utils.db.user_to_key(update.effective_user))
+        sub_list = bx_utils.db.db_to_list(user_info["subs"])
         if self.committee_name in sub_list:
             await context.bot.send_message(chat_id=update.effective_chat.id,
                                            text='It seems like you are already subscribed to this committee')
@@ -119,12 +119,12 @@ class Bar_old:
             return self.SUB
 
     async def sub(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-        user_info = r.hgetall(db.user_to_key(update.effective_user))
-        sub_list = db.db_to_list(user_info['subs'])
+        user_info = r.hgetall(bx_utils.db.user_to_key(update.effective_user))
+        sub_list = bx_utils.db.db_to_list(user_info['subs'])
         sub_list.append(self.committee_name)
-        subs = db.list_to_db(sub_list)
+        subs = bx_utils.db.list_to_db(sub_list)
         user_info['subs'] = subs
-        r.hset(db.user_to_key(update.effective_user), mapping=user_info)
+        r.hset(bx_utils.db.user_to_key(update.effective_user), mapping=user_info)
         await context.bot.send_message(chat_id=update.effective_chat.id,
                                        text=f'You have been subscribed to {self.committee_name}')
         await context.bot.send_message(chat_id=update.effective_chat.id,
@@ -132,12 +132,12 @@ class Bar_old:
         return self.HOME
 
     async def unsub(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-        user_info = r.hgetall(db.user_to_key(update.effective_user))
-        sub_list = db.db_to_list(user_info['subs'])
+        user_info = r.hgetall(bx_utils.db.user_to_key(update.effective_user))
+        sub_list = bx_utils.db.db_to_list(user_info['subs'])
         sub_list.remove(self.committee_name)
-        subs = db.list_to_db(sub_list)
+        subs = bx_utils.db.list_to_db(sub_list)
         user_info['subs'] = subs
-        r.hset(db.user_to_key(update.effective_user), mapping=user_info)
+        r.hset(bx_utils.db.user_to_key(update.effective_user), mapping=user_info)
         await context.bot.send_message(chat_id=update.effective_chat.id,
                                        text=f'You have been unsubscribed to {self.committee_name}')
         return self.HOME

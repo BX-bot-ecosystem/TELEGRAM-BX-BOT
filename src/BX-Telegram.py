@@ -28,7 +28,6 @@ from telegram.ext import (
     CallbackQueryHandler,
 )
 
-
 logger = bx_utils.logger(__name__)
 
 INITIAL, LORE, CONTINUE, COMMITTEES, REQUEST = range(5)
