@@ -48,20 +48,19 @@ services:
             - SAILORE_COMMITTEE_BOT=${SAILORE_COMMITTEE_BOT}
             - CALENDAR_ID=${CALENDAR_ID}
 
-    redis:
+    redis-stack-server:
         image: redis
 
     db:
-        image: mariadb
+        image: p
         container_name: sailore-db
         environment:
-            MYSQL_DATABASE: 'db'
-            MYSQL_ROOT_PASSWORD: 'root'
-            MYSQL_PASSWORD: 'password'
-            MYSQL_USER: 'user'
+            POSTGRES_DB: 'db'
+            POSTGRES_PASSWORD: 'password'
+            POSTGRES_USER: 'user'
         volumes:
-            - mariadb-data:/var/lib/mysql
+            - sql-data:/var/lib/postgresql/data
 
 volumes:
-    mariadb-data:
+    sql-data:
         

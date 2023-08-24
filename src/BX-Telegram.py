@@ -32,7 +32,6 @@ from telegram.ext import (
     CallbackContext
 )
 
-
 logger = bx_utils.logger(__name__)
 
 INITIAL, LORE, CONTINUE, COMMITTEES, REQUEST, MASTER, MASTER_PASS = range(7)

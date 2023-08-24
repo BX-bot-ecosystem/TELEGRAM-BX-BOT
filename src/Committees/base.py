@@ -12,7 +12,7 @@ import re
 import time
 import datetime
 import math
-
+import psycopg2
 
 import bx_utils
 import utils
