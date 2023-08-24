@@ -31,10 +31,13 @@ class Committee:
         if home_handlers is None:
             home_handlers = []
         if "messages" in self.info.keys():
-            if "info" in self.info["messages"].keys():
-                home_handlers.append(CommandHandler("info", self.about))
-            if "groupchat" in self.info["messages"].keys():
-                home_handlers.append(CommandHandler("groupchat", self.groupchat))
+            home_handlers.append(MessageHandler(filters.TEXT, self.generic))
+            if not "help" in self.info["messages"].keys():
+                self.info["messages"]["help"] = [f"You are in {self.name} bot section","Over here you can learn about their /board, their incoming /event or /sub to their communications"]
+            if not "exit" in self.info["messages"].keys():
+                self.info["messages"]["exit"] = ["See you again whenever you want to explore this great committee","After that, what do you want to talk about, we can talk about those shiny gems, the mighty Sail'ore or the different committees a pirate can join"]
+            if not "predetermined" in self.info["messages"].keys():
+                self.info["messages"]["predetermined"] = ["I didn't understand what you mean, you can always ask for /help"]
         self.states = {**{
             self.HOME: [
                            MessageHandler(
@@ -42,8 +45,6 @@ class Committee:
                            ),
                            CommandHandler("sub", self.manage_sub),
                            CommandHandler("event", self.get_events),
-                           CommandHandler("exit", self.exit),
-                           CommandHandler("help", self.help)
                        ] + (home_handlers if home_handlers else []),
             self.BOARD: [
                 CallbackQueryHandler(self.board_selection)
@@ -55,7 +56,7 @@ class Committee:
         self.handler = ConversationHandler(
             entry_points=[CommandHandler(self.info["command"][1:], self.intro)],
             states=self.states,
-            fallbacks=[MessageHandler(filters.TEXT, self.predetermined)],
+            fallbacks=[MessageHandler(filters.TEXT, self.generic)],
             map_to_parent={
                 # Connection to the parent handler, note that its written EXIT: EXIT where both of these are equal to 0, that's why it leads to INITIAL which is also equal to 0
                 self.EXIT: self.EXIT
@@ -72,7 +73,23 @@ class Committee:
             await self.send_message(update, context, text="In here you can learn about our board, get the link to join our groupchat, find out about our next events and even subscribe to our notifications from this bot")
             await self.send_message(update, context, text="To exit this section of the bot just use the command /exit")
         return self.HOME
-
+    async def generic(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+        """Generic function that manages any extra commands added by the committees"""
+        message = update.message.text
+        message = message.strip('/')
+        texts = self.info["messages"]
+        keys = texts.keys()
+        for key in keys:
+            if re.match(key, message.lower()):
+                text = texts[key]
+                return_value = self.EXIT if key == 'exit' else self.HOME
+                break
+        else:
+            text = texts["predetermined"]
+            return_value = self.HOME
+        for response in text:
+            await self.send_message(update, context, response)
+        return return_value
     def create_balanced_layout(self):
         names = [name for name in self.info["board"].keys() if 'message' in self.info["board"][name].keys()]
         total_members = len(names)
@@ -88,7 +105,6 @@ class Committee:
             groups[i].append(names[total_members - remainder + i])
 
         return groups
-
     def create_keyboard(self):
         layout = self.create_balanced_layout()
         if layout is None:
@@ -101,7 +117,6 @@ class Committee:
             keyboard.append(keyboard_row)
         keyboard.append([InlineKeyboardButton('Nay', callback_data='Nay')])
         return InlineKeyboardMarkup(keyboard)
-
     async def board_selection(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         query = update.callback_query
         await query.answer()
@@ -113,7 +128,6 @@ class Committee:
         time.sleep(len(message) / 140)
         await query.edit_message_text(text=message)
         await self.send_message(update, context, text='Do you want to learn more about any other members?', reply_markup=self.board_keyboard)
-
     async def board(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         """Introduces the board"""
         await self.send_message(update, context, text=f"Voici the members of the {self.name} board:\n" + self.board_members)
@@ -122,18 +136,6 @@ class Committee:
             return self.HOME
         await self.send_message(update, context, text='Do you want to learn more about any of these members?', reply_markup=self.board_keyboard)
         return self.BOARD
-
-
-    async def exit(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-        """Exit of the committee section"""
-        try:
-            for line in self.info["messages"]["intro.py"]:
-                await self.send_message(update, context, text=line)
-        except KeyError:
-            await self.send_message(update, context, text="See you again whenever you want to explore this great committee")
-            await self.send_message(update, context, text="After that, what do you want to talk about, we can talk about those shiny gems, the mighty Sail'ore or the different committees a pirate can join")
-            return self.EXIT
-
     async def sub(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         query = update.callback_query
         await query.answer()
@@ -160,8 +162,6 @@ class Committee:
             return self.HOME
         await query.edit_message_text(text='Alright')
         return self.HOME
-
-
     async def manage_sub(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         """Checks if the user is subscribed and allows it to toogle it"""
         user_info = bx_utils.db.r.hgetall(bx_utils.db.user_to_key(update.effective_user))
@@ -180,7 +180,6 @@ class Committee:
             await self.send_message(update, context, text='Doing so will mean that you will receive their communications through our associated bot @SailoreParrotBot')
             await self.send_message(update, context, text='Do you wish to subscribe?', reply_markup=sub_markup)
             return self.SUB
-
     async def get_events(self, update:Update, context: ContextTypes.DEFAULT_TYPE):
         time_now = datetime.datetime.now()
         two_weeks_from_now = time_now + datetime.timedelta(days = 14)
@@ -196,32 +195,6 @@ class Committee:
             await self.send_message(update, context, text="The events already planned are:")
             await self.send_message(update, context, text=message, parse_mode=ParseMode.HTML)
         return self.HOME
-
-    async def about(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        for message in self.info["messages"]["info"]:
-            await self.send_message(update, context, message)
-        return self.HOME
-
-    async def groupchat(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        for message in self.info["messages"]["groupchat"]:
-            await self.send_message(update, context, message)
-        return self.HOME
-
-    async def help(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        try:
-            for message in self.info["messages"]["help"]:
-                await self.send_message(update, context, message)
-        except KeyError:
-            await self.send_message(update, context, f"You are in {self.name} bot section")
-            await self.send_message(update, context, f"Over here you can learn about their /board, their incoming /event or /sub to their communications")
-        return self.HOME
-
-    async def predetermined(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        try:
-            for message in self.info["messages"]["predetermined"]:
-                await self.send_message(update, context, message)
-        except KeyError:
-            await self.send_message(update, context, "I didn't understand what you mean, you can always ask for /help")
 
     @staticmethod
     async def send_message(update: Update, context: ContextTypes.DEFAULT_TYPE, text, parse_mode=None, reply_markup=None):
