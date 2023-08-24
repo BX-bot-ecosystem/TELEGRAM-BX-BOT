@@ -1,4 +1,4 @@
-from telegram import ReplyKeyboardMarkup, Update, InlineKeyboardMarkup, InlineKeyboardButton
+﻿from telegram import ReplyKeyboardMarkup, Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import (
     CommandHandler,
     ContextTypes,
@@ -12,7 +12,6 @@ import re
 import time
 import datetime
 import math
-
 
 import bx_utils
 import utils
@@ -138,7 +137,7 @@ class Committee:
     async def sub(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         query = update.callback_query
         await query.answer()
-        if query.data[0] == 'True' and query.data[1] == 'True':
+        if query.data[0] == 'T' and query.data[1] == 'T':
             user_info = bx_utils.config.r.hgetall(bx_utils.db.user_to_key(update.effective_user))
             sub_list = bx_utils.db.db_to_list(user_info['subs'])
             sub_list.append(self.name)
@@ -150,7 +149,7 @@ class Committee:
             await self.send_message(update, context,
                                     text='In order to receive communications interact at least once with t.me/SailoreParrotBot')
             return self.HOME
-        if query.data[0] == 'True' and query.data[1] == 'True':
+        elif query.data[0] == 'T' and query.data[1] == 'F':
             user_info = bx_utils.config.r.hgetall(bx_utils.db.user_to_key(update.effective_user))
             sub_list = bx_utils.db.db_to_list(user_info['subs'])
             sub_list.remove(self.name)
@@ -159,20 +158,23 @@ class Committee:
             bx_utils.config.r.hset(bx_utils.db.user_to_key(update.effective_user), mapping=user_info)
             await self.send_message(update, context, text=f'You have been unsubscribed to {self.name}')
             return self.HOME
+        await query.edit_message_text(text='Alright')
+        return self.HOME
+
 
     async def manage_sub(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         """Checks if the user is subscribed and allows it to toogle it"""
         user_info = bx_utils.db.r.hgetall(bx_utils.db.user_to_key(update.effective_user))
         sub_list = bx_utils.db.db_to_list(user_info["subs"])
-        sub_markup = InlineKeyboardMarkup([[InlineKeyboardButton('Yay', callback_data=(True, True)),
-                                            InlineKeyboardButton('Nay', callback_data=(False, True))]])
-        unsub_markup = InlineKeyboardMarkup([[InlineKeyboardButton('Yay', callback_data=(True, False)),
-                                            InlineKeyboardButton('Nay', callback_data=(False, False))]])
+        sub_markup = InlineKeyboardMarkup([[InlineKeyboardButton('Yay', callback_data='TT'),
+                                            InlineKeyboardButton('Nay', callback_data='FT')]])
+        unsub_markup = InlineKeyboardMarkup([[InlineKeyboardButton('Yay', callback_data='TF'),
+                                            InlineKeyboardButton('Nay', callback_data='FF')]])
         if self.name in sub_list:
             await self.send_message(update, context, text='It seems like you are already subscribed to this committee')
             await self.send_message(update, context, text='This means that you will receive their communications through our associated bot @SailoreParrotBot')
             await self.send_message(update, context, text='Do you wish to unsubscribe?', reply_markup=unsub_markup)
-            return self.UNSUB
+            return self.SUB
         else:
             await self.send_message(update, context, text='It seems like you are not subscribed to this committee')
             await self.send_message(update, context, text='Doing so will mean that you will receive their communications through our associated bot @SailoreParrotBot')
