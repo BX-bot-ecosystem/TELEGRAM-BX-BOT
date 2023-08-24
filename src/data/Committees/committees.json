@@ -11,6 +11,8 @@
             "intro": ["Hullo, how are you? use /event to view events, /sub to subscribe and /exit to exit."]
         }
     },
+
+
     ".9 Bar": {
         "name": ".9 Bar \uD83C\uDF7B\uD83C\uDF7B",
         "command": "/bar",
@@ -18,10 +20,10 @@
             "Carlos": {"role":  "Prez", "message":  "Always up to doing any crazy plan"},
             "Maxime": {"role":  "VPrez", "message":  "Making sure everything runs smoothly"},
             "Gabin": {"role":  "Stock", "message":  "Just making sure we don't run out of beer"},
-            "Alix": {"role":  "Comms", "message":  "Always pleased to inform you about everything"},
-            "Klaara": {"role":  "Trez", "message":  "You better give us what you owe us"},
-            "Anahi": {"role":  "Events", "message":  "Preparing your favorite events"},
-            "Johanna": {"role":  "Sked", "message":  "You better arrive in time..."},
+            "Alix": {"role":  "Comms"},
+            "Klaara": {"role":  "Trez"},
+            "Anahi": {"role":  "Events"},
+            "Johanna": {"role":  "Sked"},
             "Arturo": {"role":  "Bartender", "message":  "Always thinking about the next cocktail"},
             "Antoine": {"role":  "Bartender"}
         },
