@@ -13,7 +13,6 @@ import json
 with open(utils.config.ROOT + '/data/lore.json', encoding='utf-8') as f:
     texts = json.load(f)
 
-bx_utils.Vcheck.telegram()
 from telegram import Update
 from telegram.ext import (
     Application,
