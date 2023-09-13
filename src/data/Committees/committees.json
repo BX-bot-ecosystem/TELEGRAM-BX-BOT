@@ -49,5 +49,12 @@
             "Gianluca": {"role": "VP"},
             "Aditya": {"role": "Trez"}
         }
+    },
+    "PhysiX": {
+        "name": "PhysiX",
+        "command": "/physix",
+        "board": {
+            "Aditya": {"role": ""}
+        }
     }
 }
