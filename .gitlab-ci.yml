@@ -2,5 +2,5 @@ deploy:      # This job runs in the deploy stage.
     stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
     when: manual
     script:
-        - apt-get update && apt-get install -y curl
+        - apk update && apk add -y curl
         - curl --request POST --form token=$TRIGGER_TOKEN --form ref=master --form variables[PROJECT]=bx-bot
