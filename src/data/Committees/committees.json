@@ -58,7 +58,7 @@
         }
     },
     "Example": {
-        "name": "Example",
+        "name": "example",
         "command": "/example",
         "board": {
             "Joe": {
