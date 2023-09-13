@@ -21,6 +21,17 @@
             "predetermined": ["Oh I didn't quite understand what you said, use /help to learn about what you can do over here"]
         }
     },
+    "FightX": {
+        "name": "FightX",
+        "command": "FightX",
+        "board": {
+        "Sacha Elalouf": {"role":  "President"}},
+    "messages": {
+        "intro": ["Welcome to the very unique fighting sports and martial arts committee of the bachelor!"],
+        "info": ["This group has been inactive for the past year, but the goal is to find motivated people from all backgrounds (from beginner to expert in any discipline) to train regularly and teach others what you know 🥋🥋","If you want to join the board, don’t hesitate to pm @sacha.el on instagram or @sachaela on telegram","If you just want to see how it’s like, join the groupchat and check out one of our trainings. See you soon 🥊🥊🥊"],
+        "groupchat": ["Join our groupchat to learn about our amazing events https://t.me/+tAjrTA3xZ_JiZjQ0"]
+        }
+    },
     "BX/B-": {
         "name": "BX/B-",
         "command": "/rowing",
@@ -28,18 +39,6 @@
             "Gianluca": {"role": "Prez"},
             "Aditya": {"role": "VP"}
         }
-    },
-    "PhysiX": {
-        "name": "PhysiX \uFE0F",
-        "command": "/physix",
-        "board": {
-            "TestPerson 1": {"role":  "Prez"},
-            "TestPerson 2": {"role":  "VP"}
-        }
-    },
-    "ClimbX": {
-        "name": "ClimbX \uD83E\uDDD7\uD83E\uDDD7",
-        "command": "/climbx"
     },
     "Xcinema": {
         "name": "Xcinema",
