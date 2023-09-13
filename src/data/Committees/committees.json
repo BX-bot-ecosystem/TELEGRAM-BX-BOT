@@ -56,5 +56,14 @@
         "board": {
             "Aditya": {"role": ""}
         }
+    },
+    "Example": {
+        "name": "Example",
+        "command": "/example",
+        "board": {
+            "Joe": {
+                "role": "Prez"
+            }
+        }
     }
 }
