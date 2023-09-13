@@ -1,11 +1,6 @@
 deploy:      # This job runs in the deploy stage.
     stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
     when: manual
-
-    # variables for BR docker service
-    variables:
-        PROJECT: bx-bot
-
-    # Trigger br docker service deployment
-    trigger:
-        project: br/docker-services
+    script:
+        - apk update && apk add curl
+        - curl --request POST --form token=$TRIGGER_TOKEN --form ref=master --form variables[PROJECT]=bx-bot https://gitlab.binets.fr/api/v4/projects/560/trigger/pipeline
