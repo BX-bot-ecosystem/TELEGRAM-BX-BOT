@@ -57,8 +57,8 @@
             "Aditya": {"role": ""}
         }
     },
-    "Example": {
-        "name": "example",
+    "example": {
+        "name": "Example",
         "command": "/example",
         "board": {
             "Joe": {
