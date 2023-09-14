@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-BOT_TOKEN = os.getenv("TEST_BOT")
+BOT_TOKEN = os.getenv("SAILORE_BX_BOT")
 gc_id = int(os.getenv("GC_ID"))
 ids = os.getenv("IDS")
 import json
@@ -131,6 +131,9 @@ async def password(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def receive_pass(update: Update, context: CallbackContext):
     query = update.callback_query
     await query.answer()
+    if query.data == 'Nay':
+        await query.edit_message_text(text="Alright")
+        return INITIAL
     committee_name = query.data
     new_password = committee_name + ':' + ''.join(random.choices(string.digits + string.ascii_letters, k=10))
     bx_utils.db.add_one_time_pass(new_password, committee_name)
