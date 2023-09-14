@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-BOT_TOKEN = os.getenv("SAILORE_BX_BOT")
+BOT_TOKEN = os.getenv("TEST_BOT")
 gc_id = int(os.getenv("GC_ID"))
 ids = os.getenv("IDS")
 import json
