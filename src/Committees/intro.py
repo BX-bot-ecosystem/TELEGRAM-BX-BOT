@@ -14,8 +14,5 @@ async def intro(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Committees are the central part of our piratey student life, there is lots of them and if you don't find the one you want, you can even create a new one")
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
     time.sleep(0.9)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="Here is the full list of committees:\n -  " + telegram_list)
-    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
-    time.sleep(1.1)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="To enter a committee section just press the command next to its name")
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="For the moment you can only access .9 Bar (by clicking here /bar ), however, soon enough most committees will start appearing over here")
     return COMMITTEES
