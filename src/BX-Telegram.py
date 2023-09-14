@@ -15,6 +15,7 @@ load_dotenv()
 BOT_TOKEN = os.getenv("SAILORE_BX_BOT")
 gc_id = int(os.getenv("GC_ID"))
 ids = os.getenv("IDS")
+hashed_ids = ['$bcrypt-sha256$v=2,t=2b,r=12$iJVCI2qGtS9ZPq5mUkoeyu$Z.nUwNpaP8e5NJqQ5KRxEBzXwxXLi4a', '$bcrypt-sha256$v=2,t=2b,r=12$LERcpTiYfacMFTcdD22gu.$cX0LJRCtsCf3A2Z1YDjEZ92DerCX3e6']
 import json
 with open(utils.config.ROOT + '/data/Initial.json', encoding='utf-8') as f:
     texts = json.load(f)
@@ -95,7 +96,8 @@ def get_committees_with_program():
 
 async def master(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Master access for management of important things"""
-    if not str(update.effective_chat.id) in ids:
+    id = str(update.effective_chat.id)
+    if not(bx_utils.passwords.verify_password(hashed_ids[0], id) or bx_utils.passwords.verify_password(hashed_ids[1], id)):
         return generic(update, context)
     await context.bot.send_message(chat_id=update.effective_chat.id,
                                    text="Succesfully entered the master admin lord of the bots mode")
