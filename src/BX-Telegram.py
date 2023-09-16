@@ -192,6 +192,7 @@ def main() -> None:
     application = Application.builder().token(BOT_TOKEN).build()
     members = Lore.Members()
     conv_handler = ConversationHandler(
+        block=False,
         entry_points=[CommandHandler("start", start), MessageHandler(filters.TEXT, start)],
         states={
             INITIAL: [

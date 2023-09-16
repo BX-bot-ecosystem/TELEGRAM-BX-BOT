@@ -62,6 +62,7 @@ class Committee:
             ],
         }, **(extra_states if extra_states else {})}
         self.handler = ConversationHandler(
+            block=False,
             entry_points=[CommandHandler(self.info["command"][1:], self.intro)],
             states=self.states,
             fallbacks=[MessageHandler(filters.TEXT, self.generic)],
