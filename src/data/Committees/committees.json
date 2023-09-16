@@ -152,7 +152,22 @@
             "help": ["Use /info if you want some information, /board if you want useless messages, /groupchat to get yourself some friends and /exit to get off your phone and start climbing something."],
             "predetermined": ["Look, if you can't use commands correctly, how am I supposed to trust what you tell me while belaying?"]
         }
-    }
+    },
+
+    "BSide": {
+        "name": "BSide🎧🔥",
+        "command": "/BSide",
+        "board": {
+            "Pilar": {"role":  "Co-President", "message": "<Optional Board member 1 message>"},
+            "Raluca": {"role":  "Co-President", "message": "<Optional Board member 2 message>"}
+        },
+        "messages": {
+            "intro": ["Commercial, Hip Hop, Dance, EDM, Funk, Chill, Reggaeton, House, Techno,... we MIX all your favorite songs at the events, afterworks and parties"],
+            "info": ["BSide is the one and only Bachelor Mixing Committee bringing crazy music and epic parties to l'X"],
+            "groupchat": ["No link for the groupchat yet, but go check our instagram @bside_bx"]
+        }
+      }
+
 }
 
 

@@ -9,8 +9,9 @@ from .RunX import RunX
 from .climbx import ClimbX
 from .shuttlex import Badminton
 from .CSC import CSC
+from .Bside import Bside
 
-_temp = [Bar, Rowing, Xcinema, FightX, OnlyGains, RunX, ClimbX, Badminton, CSC]
+_temp = [Bar, Rowing, Xcinema, FightX, OnlyGains, RunX, ClimbX, Badminton, CSC, Bside]
 _objs = [ob() for ob in _temp]
 names = [ob.name for ob in _objs]
 committees = [ob.handler for ob in _objs]
