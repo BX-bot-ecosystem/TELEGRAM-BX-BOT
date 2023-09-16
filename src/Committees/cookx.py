@@ -1,7 +1,7 @@
 from . import base
 
-class Bside(base.Committee):
+class CookX(base.Committee):
     def __init__(self):
         super().__init__(
-            "BSide"
+            "Cooking Committee"
         )

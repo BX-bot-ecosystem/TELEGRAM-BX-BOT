@@ -180,7 +180,61 @@
           "groupchat": ["If you'd like to join the group chat, just click this link: https://t.me/+SVpQ3dyPzmAwYThk"],
           "help": ["You can use /info to get more info about the committee, as well as /groupchat to get the link to the groupchat."],
           "predetermined": ["Didn't quite get that. Use /help if you want some more information."]
-    }
+        }
+    },
+    "Knittix": {
+        "name": "Knittix 🧶🧵🪡",
+        "command": "/knit",
+        "board": {
+            "Rémi": {
+                "role": "President"
+            }
+        },
+        "messages": {
+        "intro": ["Hey welcome to the most creative committee there is"],
+        "info": [
+            "We can teach you knitting, crochet and sewing",
+            "Come to our meetings where we will knit or crochet with biscuits, tea and good music to go with it",
+            "We also have workshops where we will teach you something new and work on various projects"
+        ],
+        "groupchat": ["https://t.me/+C1_AUEU08JoxY2Nk"],
+        "help": [
+            "In this amazing committee bot you can learn /info about Knittix or about our /board",
+            "You can also get the link to the Knittix groupchat with the command /groupchat"
+        ],
+        "predetermined": ["Oh I didn't quite understand what you said, use /help to learn about what you can do over here"]
+        }
+    },
+    "Cooking Committee": {
+        "name": "Cooking Committee",
+        "command": "cookx",
+        "board": {
+            "Martin Lau": {"role":  "President", "message": "Primary administrator for the commitee, authority over the kitchen and inventory."},
+            "Gabriel Mayor": {"role": "Event Manager", "message":"Event Manager. Contact for event suggestions and feedback."},
+            "Aditya Swaminathan": {"role":  "Restaurant Manager", "message": "Restaurnat Manager. Contact for restaurant proposals and ideas."}
+        },
+        "messages": {
+            "intro": ["Welcome to the cooking committee!", "The cooking committee is dedicated to improving the culinary journies of Bachelor students."],
+            "info": ["The cooking committee is divided into three sections:","A general forum (our groupchat) where Bachelor students can share images of their dishes, recipes and a place for discussion.","Events: We will organize cooking events to gather interested cooks to test new recipes and cook together.", "Businesses: The cooking committee intends to diversify the food options available to Bachelors. As such, the cooking committee will help students run restaurants and sell their food to others."],
+            "groupchat": ["Telegram Groupchat: https://t.me/+Ig83EAfXn_AwZDA1"],
+            "help": ["'/intro': See an introduction to our committee", "'/info': See information about our committee", "'/groupchat': Access the link to join the cooking committee forum"],
+            "predetermined": ["Your message was not a valid command! Check /help to see which commands can be used."]
+        }
+    },
+    "The Greench": {
+        "name": "The Greench",
+        "command": "greench",
+        "board": {
+            "Cenzo De Carvalho": {"role":  "President", "message": "Primary overseer of the commitee."},
+            "Martin Lau": {"role":  "Vice President", "message": "Responsible of inventory and committee treasury."}
+        },
+        "messages": {
+        "intro": ["The Greench oversees the small garden of the Batiment 103."],
+        "info": ["We're a small bunch of gardening enthusiasts that just enjoy seeing plants grow and enjoying the fruits of our work."],
+        "groupchat": ["Contact @thatmartinlau to get added to the Greench!"],
+        "help": ["'/intro': See an introduction to our committee", "'/info': See information about our committee", "'/groupchat': Access the groupchat"],
+        "predetermined": ["Your message was not a valid command! Check /help to see which commands can be used."]
+        }
     }
 }
 

@@ -1,7 +1,8 @@
 from . import base
 
-class Bside(base.Committee):
+
+class KnittiX(base.Committee):
     def __init__(self):
         super().__init__(
-            "BSide"
+            'Knittix'
         )
