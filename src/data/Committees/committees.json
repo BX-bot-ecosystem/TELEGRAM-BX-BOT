@@ -40,7 +40,7 @@
             "Aditya": {"role": "VP"}
         },
         "messages": {
-            "intro": ["The Bachelor Rowing Committee.",
+            "intro": ["Welcome to BX/B-, the Bachelor Rowing Committee.",
                 "This Committee mainly organises rowing for bachelors in conjunction with CSX with the aim of having bachelor teams in races around France",
                 "use /help for possible commands and /exit to exit the committee section"],
             "info": ["Rowing slots are from 12:00 to 13:30 at the lake, Monday through Friday. Thursdays are reserved for rowers with confirmed autonomy."],
