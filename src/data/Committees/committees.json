@@ -3,7 +3,7 @@
         "name": ".9 Bar \uD83C\uDF7B\uD83C\uDF7B",
         "command": "/bar",
         "board": {
-            "Carlos": {"role":  "Prez", "message":  "Idk ill see"},
+            "Carlos": {"role":  "Prez", "message":  "Planning the next preStyx"},
             "Maxime": {"role":  "VPrez"},
             "Gabin": {"role":  "Stock"},
             "Alix": {"role":  "Comms", "message": "Currently writing a message you’ll see in allpromo"},
