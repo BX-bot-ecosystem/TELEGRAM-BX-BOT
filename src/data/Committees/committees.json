@@ -51,7 +51,7 @@
     },
     "OnlyGains": {
         "name": "OnlyGains🏋️🏋️‍♀️🔒",
-        "command": "OnlyGains",
+        "command": "/OnlyGains",
         "board": {
             "Maurice Constantin Matar": {"role":  " Co-President", "message": "Yogurt is a superfood"},
             "Sacha Elalouf": {"role":  "Co-President", "message": "Force et honneur"},
