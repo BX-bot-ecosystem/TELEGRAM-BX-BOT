@@ -166,8 +166,22 @@
             "info": ["BSide is the one and only Bachelor Mixing Committee bringing crazy music and epic parties to l'X"],
             "groupchat": ["No link for the groupchat yet, but go check our instagram @bside_bx"]
         }
-      }
-
+      },
+    "GameX": {
+        "name": "GameX",
+        "command": "GameX",
+        "board": {
+          "Gabriel Faes": {"role":  "President", "message": "Passionate about games. Maybe too much."},
+          "Tamar Tsikarishvili": {"role":  "Vice-President", "message": "Always down for a quick, five-hour session of board games. Winning is for losers, I'm just here to have a chuckle."}
+        },
+        "messages": {
+          "intro": ["The committee for anything related to games. Board games, video games, or anything else that strikes your fancy and has 'games' in it. You can type /info for some more info, or /groupchat to get the link to the groupchat. There's also /help."],
+          "info": ["There's tons of board games you can borrow if you ask nicely. Just message one of the board members (which you can find by doing /board).", "And there's a game night every 3rd Saturday of the month starting at 7 p.m.! You can have fun playing some games casually or, if you're feeling competitive, participate in the tournament with a bunch of board and video games where there can be only one winner. Win the tournament, and you might have a chance to win Xp, win enough Xp and... Well, that's a surprise!", "Thanks for reading this far! Just message or talk to the president of the committee and ask for some bonus Xp to get some bonus starting Xp!"],
+          "groupchat": ["If you'd like to join the group chat, just click this link: https://t.me/+SVpQ3dyPzmAwYThk"],
+          "help": ["You can use /info to get more info about the committee, as well as /groupchat to get the link to the groupchat."],
+          "predetermined": ["Didn't quite get that. Use /help if you want some more information."]
+    }
+    }
 }
 
 
