@@ -189,10 +189,10 @@ def create_keyboard(names):
 def main() -> None:
     """Run the bot."""
     # Create the Application and pass it your bot's token.
-    application = Application.builder().token(BOT_TOKEN).build()
+    application = Application.builder().token(BOT_TOKEN).concurrent_updates(True).build()
     members = Lore.Members()
     conv_handler = ConversationHandler(
-        block=False,
+        #block=False,
         entry_points=[CommandHandler("start", start), MessageHandler(filters.TEXT, start)],
         states={
             INITIAL: [
