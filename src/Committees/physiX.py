@@ -1,6 +1,6 @@
 from . import base
 
-class Physix(base.Committee):
+class PhysiX(base.Committee):
     def __init__(self):
         super().__init__(
             'PhysiX'
