@@ -136,8 +136,23 @@
             "help": ["In this amazing committee bot you can learn /info about CSC or about our /board", "Moreover, you can /sub to our communications or view our next /event", "Whenever you want to leave just /exit"],
             "predetermined": ["Incorrect command usage, please use /help to educate yourself"]
         }
+    },
+    "ClimbX": {
+        "name": "ClimbX",
+        "command": "/climb",
+        "board": {
+            "Aditya": {"role": "Prez", "message": "Professional Idiot"},
+            "Maëlle": {"role": "VP", "message": "Voice of Reason"},
+            "Gianluca": {"role": "Trez", "message": "Masochistic Moron"}
+        },
+        "messages": {
+            "intro": ["Welcome to ClimbX, where you will most certainly keep all your skin and never suffer head injuries."],
+            "info": ["something something"],
+            "groupchat": ["Use the link to join our cult:", "https://t.me/+OTOjLtht30Y4MWQx"],
+            "help": ["Use /info if you want some information, /board if you want useless messages, /groupchat to get yourself some friends and /exit to get off your phone and start climbing something."],
+            "predetermined": ["Look, if you can't use commands correctly, how am I supposed to trust what you tell me while belaying?"]
+        }
     }
-
 }
 
 
