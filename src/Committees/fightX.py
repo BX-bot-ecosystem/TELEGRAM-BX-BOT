@@ -1,9 +1,7 @@
 from . import base
 
-
-class Example(base.Committee):
+class Fightx(base.Committee):
     def __init__(self):
         super().__init__(
-            'example',
+            "FightX"
         )
-    
