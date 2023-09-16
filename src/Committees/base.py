@@ -62,7 +62,6 @@ class Committee:
             ],
         }, **(extra_states if extra_states else {})}
         self.handler = ConversationHandler(
-            #block=False,
             entry_points=[CommandHandler(self.info["command"][1:], self.intro)],
             states=self.states,
             fallbacks=[MessageHandler(filters.TEXT, self.generic)],
@@ -190,8 +189,8 @@ class Committee:
             await self.send_message(update, context, text='Do you wish to subscribe?', reply_markup=sub_markup)
             return self.state.SUB
     async def get_events(self, update:Update, context: ContextTypes.DEFAULT_TYPE):
-        #await self.send_message(update, context, "This functionality is not currently implemented. Coming soon!")
-        #return self.state.HOME
+        await self.send_message(update, context, "This functionality is not currently implemented. Coming soon!")
+        return self.state.HOME
         time_now = datetime.datetime.now()
         two_weeks_from_now = time_now + datetime.timedelta(days = 14)
         time_max = two_weeks_from_now.isoformat() + 'Z'

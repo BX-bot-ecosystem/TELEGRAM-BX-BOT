@@ -155,7 +155,7 @@
     },
 
     "BSide": {
-        "name": "BSide🎧🔥",
+        "name": "BSide",
         "command": "/BSide",
         "board": {
             "Pilar": {"role":  "Co-President", "message": "<Optional Board member 1 message>"},
