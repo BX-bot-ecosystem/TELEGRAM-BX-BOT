@@ -16,9 +16,11 @@ from .bmathx import BmathX
 from .volunteerx import VolunteerX
 from .greench import Greench
 from .cookx import CookX
+from .knittix import KnittiX
+from .music import Music
 
 
-_temp = [Bar, PhysiX, Rowing, Xcinema, FightX, OnlyGains, RunX, ClimbX, Badminton, CSC, Bside, GameX, LGBTQX, BmathX, VolunteerX, Greench, CookX]
+_temp = [Bar, PhysiX, Rowing, Xcinema, FightX, OnlyGains, RunX, ClimbX, Badminton, CSC, Bside, GameX, LGBTQX, BmathX, VolunteerX, Greench, CookX, KnittiX, Music]
 _objs = [ob() for ob in _temp]
 names = [ob.name for ob in _objs]
 committees = [ob.handler for ob in _objs]
