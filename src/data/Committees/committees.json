@@ -169,7 +169,7 @@
       },
     "GameX": {
         "name": "GameX",
-        "command": "GameX",
+        "command": "/GameX",
         "board": {
           "Gabriel Faes": {"role":  "President", "message": "Passionate about games. Maybe too much."},
           "Tamar Tsikarishvili": {"role":  "Vice-President", "message": "Always down for a quick, five-hour session of board games. Winning is for losers, I'm just here to have a chuckle."}
@@ -207,7 +207,7 @@
     },
     "Cooking Committee": {
         "name": "Cooking Committee",
-        "command": "cookx",
+        "command": "/cookx",
         "board": {
             "Martin Lau": {"role":  "President", "message": "Primary administrator for the commitee, authority over the kitchen and inventory."},
             "Gabriel Mayor": {"role": "Event Manager", "message":"Event Manager. Contact for event suggestions and feedback."},
@@ -223,7 +223,7 @@
     },
     "The Greench": {
         "name": "The Greench",
-        "command": "greench",
+        "command": "/greench",
         "board": {
             "Cenzo De Carvalho": {"role":  "President", "message": "Primary overseer of the commitee."},
             "Martin Lau": {"role":  "Vice President", "message": "Responsible of inventory and committee treasury."}
