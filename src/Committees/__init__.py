@@ -21,7 +21,7 @@ from .music import Music
 from .next import NeXt
 
 
-_temp = [Bar, PhysiX, Rowing, Xcinema, FightX, OnlyGains, RunX, ClimbX, Badminton, CSC, Bside, GameX, LGBTQX, BmathX, VolunteerX, Greench, CookX, KnittiX, Music]
+_temp = [Bar, PhysiX, Rowing, Xcinema, FightX, OnlyGains, RunX, ClimbX, Badminton, CSC, Bside, GameX, LGBTQX, BmathX, VolunteerX, Greench, CookX, KnittiX, Music, NeXt]
 _objs = [ob() for ob in _temp]
 names = [ob.name for ob in _objs]
 committees = [ob.handler for ob in _objs]
