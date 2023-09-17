@@ -312,13 +312,13 @@
         "name": "BMathX",
         "command": "/math",
         "board": {
-            "George": {"role":  "President", "message": " Leads our math-loving crew"},
-            "Darius": {"role":  "Math Contest Host"},
-            "Ipop": {"role":  "Math Contest Host"},
-            "Koka": {"role":  "Seminar Coordinator", "message": "Gathers professors to give us talks on hard and interesting math topics"},
-            "Marta": {"role":  "Communications"},
-            "Oscar": {"role":  "Integration Bee Host"},
-            "Milana": {"role":  "Puzzle Event Host"}
+            "George": {"role":  "President", "message": "Leads our math-loving crew and talks about Iași a bit too much"},
+            "Darius": {"role":  "Math Contest Host", "message": "Likes astrology, likes math more (allegedly)"},
+            "Ipop": {"role":  "Math Contest Host", "message": "Will mention she did olympiads in high school within the first 5 mins you meet her"},
+            "Koka": {"role":  "Seminar Coordinator", "message": "Talks about math stuff nobody else understands"},
+            "Marta": {"role":  "Communications", "message": "Skilled graphic designer and emoji sender"},
+            "Oscar": {"role":  "Integration Bee Host", "message": "Will make you question all you know by a twisted sign called integral"},
+            "Milana": {"role":  "Puzzle Event Host", "message": "Puzzles no one can actually solve but have fun trying"}
         },
         "messages": {
             "intro": ["Welcome to BMathX - the math committee of the bachelor!"],
@@ -326,6 +326,27 @@
             "groupchat": ["Here is the link to join our groupchat: https://t.me/+iCJwSvUv1RNiYTQ8"],
             "help": ["You can learn /info about BMathX or about our /board", "Moreover, you can /sub to our communications or view our next /event", "Whenever you want to leave just /exit"],
             "predetermined": ["I didn't quite understand what you said, use /help to learn about what you can do over here"]
+        }
+    },
+    "VolunteerX": {
+        "name": "VolunteerX 🫶🏼",
+        "command": "/VolunteerX",
+        "board": {
+            "Flore": {"role":  "President", "message":  "You can call me The boss or baby :)"},
+            "Charlotte": {"role":  "Vice President", "message": "Your VP: V stands for Volunteering and P stands for Passion ;)"},
+            "Cyriac": {"role":  "Treasurer", "message": "My job is to make sure that the money we collect over the year ends up in the hands of all those amazing charities that help change the world !! :))"},
+            "Adrien": {"role":  "Project manager", "message":  "I manage projects inside the VolunteerX Committee. Contact me if you have any ideas of projects you would like to implement :)"},
+            "Berra": {"role":  "Project manager", "message":  ""},
+            "Emma": {"role":  "Event manager and design", "message":  "I make sure everything goes as planned to make your volunteering experiences unforgettable! :)"},
+            "Sacha": {"role":  "Event manager", "message":  ""},
+            "Hiba Lina": {"role":  "Communications and social media", "message":  "You can call me 'Hibslins', the chocolate lover on a volunteering mission! 🍫🤝 I'm part of an awesome volunteering committee, where we're all about spreading positivity. Want to join us? Let's make life sweeter, one act of kindness at a time! 😄🌟"},
+        },
+        "messages": {
+            "intro": ["Heyy, welcome to the kindest and most benevolent committee🩵", "Get ready to provide a helping hand to those in need!"],
+            "info": ["This is the volunteering committee, which organises all the volunteering and charity events on campus. ", "Through thrift shops👕, bake sales🍪 and charity runs🏃‍♂️, we have raised money for cancer research (Imagine for Margo), to fight world hunger (Action contre la faim) and to donate to Ukraine, Syria and Turkey. We have also organised a hair donation 💇‍♀️ to make wigs for cancer patients and to make filters so absorb the oil polluting the oceans."],
+            "groupchat": ["Everyone is welcome to help! Whether you want to take part in all our events or you just want to help out in one of them, join to group chat to keep up with all the updates: https://t.me/+tmVaWvpuTwRiNDU0"],
+            "help": ["In this amazing committee bot you can learn /info about VolunteerX and get to know our /board", "Moreover, you can join our /groupchat or view our next /event", "Whenever you want to leave just /exit"],
+            "predetermined": ["Oh I didn't quite understand what you said, use /help to learn about what you can do over here"]
         }
     }
 }
