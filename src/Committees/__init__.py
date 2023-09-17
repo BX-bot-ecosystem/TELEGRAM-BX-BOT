@@ -18,6 +18,7 @@ from .greench import Greench
 from .cookx import CookX
 from .knittix import KnittiX
 from .music import Music
+from .next import NeXt
 
 
 _temp = [Bar, PhysiX, Rowing, Xcinema, FightX, OnlyGains, RunX, ClimbX, Badminton, CSC, Bside, GameX, LGBTQX, BmathX, VolunteerX, Greench, CookX, KnittiX, Music]

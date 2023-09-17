@@ -348,6 +348,27 @@
             "help": ["In this amazing committee bot you can learn /info about VolunteerX and get to know our /board", "Moreover, you can join our /groupchat or view our next /event", "Whenever you want to leave just /exit"],
             "predetermined": ["Oh I didn't quite understand what you said, use /help to learn about what you can do over here"]
         }
+    },
+    "NeXt": {
+        "name": "NeXt ☘️",
+        "command": "/NeXt",
+        "board": {
+            "Charlotte": {"role":  "President 👑", "message":  "Eco-Captain with a PhD in hugging trees ;)"},
+            "Fanny": {"role":  "Vice President + Communication 📞", "message": "Sustainably communicating ;)"},
+            "Antoine": {"role":  "Treasurer 💶", "message": "As the Treasurer of NeXt, I’m dealing with the budget for all the upcoming events, asking for fundings and seeking for sponsorships. Join NeXt to help us in this mission and maybe take over me next year ;) and feel free to dm me if you have any specific questions."},
+            "Johanna": {"role":  "l’ORE manager🌊"},
+            "Thibaut": {"role":  "Building manager 🏫"},
+            "Manon": {"role":  "EcoWeek Manager 🪴"},
+            "Maëlle": {"role":  "Co-Committee Event Manager 🤝"},
+            "Simon": {"role":  "Seminars and PDV 🎤"}
+        },
+        "messages": {
+            "intro": ["Hey Eco-lovers, Get ready to embark on an ecological journey like never before with NeXt, our ecological committee!  ", "We’re here to raise awareness about pressing ecological and environmental issues and ignite sustainable actions through a year-round calendar of engaging events and initiatives !  🫶 ", "Join the committee and the planet will thank you ! 🌍"],
+            "info": ["NeXt committee is the ecological association of the Bachelor ! It is open to any bachelors interested in the environmental cause 🌱 and who wishes to save the planet !  ", "Throughout the year, we organise all sort of events to sensibilize, raise awareness to environmental problems and encourage people to adopt more sustainables lifestyles ! Even small gestures are better than nothing !  🙌 ", "We work towards making our building more eco-friendly and try to cooperate with the admin, engineers and professionnels to promote sustainability through fun activities, seminars and our very own Eco-Week 🪴 ! Don’t forget : we need your resistence to save our existence, there is no planet B !"],
+            "groupchat": ["Come and join the committee if you want to be part of NeXt and join the team !: https://t.me/+R71qPgiR2JRmZTc8"],
+            "help": ["This bot will simplify your life ! Get some /info about NeXt and the /board.  ", "Feel free to join the /groupchat or stay tune for the upcoming /event. ", "Whenever you want to leave just /exit"],
+            "predetermined": ["Oh I didn't quite understand what you said, use /help to learn about what you can do over here"]
+        }
     }
 }
 
