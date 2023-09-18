@@ -8,6 +8,7 @@ stages:
 # Create the docker image and upload it to the project registry
 ship:
   stage: ship
+  when: manual
   image: docker:latest
   services:
     # Run docker inside gitlab docker runners
