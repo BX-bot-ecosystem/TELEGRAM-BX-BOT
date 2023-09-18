@@ -189,8 +189,8 @@ class Committee:
             await self.send_message(update, context, text='Do you wish to subscribe?', reply_markup=sub_markup)
             return self.state.SUB
     async def get_events(self, update:Update, context: ContextTypes.DEFAULT_TYPE):
-        self.send_message(update, context, "Functionality to be implemented soon!")
-        return self.state.HOME
+        # self.send_message(update, context, "Functionality to be implemented soon!")
+        # return self.state.HOME
         time_now = datetime.datetime.now()
         two_weeks_from_now = time_now + datetime.timedelta(days = 14)
         time_max = two_weeks_from_now.isoformat() + 'Z'
