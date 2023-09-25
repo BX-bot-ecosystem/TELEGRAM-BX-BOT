@@ -203,10 +203,8 @@ def main() -> None:
                     filters.Regex(re.compile(r"com+it+e+s?", re.IGNORECASE)), Committees.intro
                     # added the question marks cuz people tend to mispell this word
                 ),
-                CommandHandler("request", request),
-                Committees.committees,
-                MessageHandler(filters.TEXT, generic)
-            ],
+                CommandHandler("request", request)
+            ] + Committees.committees,
             LORE: [
                 # State of the bot in which it can be asked about the different sailore members
                 CallbackQueryHandler(members.member)
