@@ -41,7 +41,7 @@ class Committee:
         if "messages" in self.info.keys():
             home_handlers.append(MessageHandler(filters.TEXT, self.generic))
             if not "help" in self.info["messages"].keys():
-                self.info["messages"]["help"] = [f"You are in {self.name} bot section","Over here you can learn about their /board, their incoming /event or /sub to their communications"]
+                self.info["messages"]["help"] = [f"You are in {self.name} bot section","Over here you can learn /info about their committee or about their /board, their incoming /event or /sub to their communications"]
             if not "exit" in self.info["messages"].keys():
                 self.info["messages"]["exit"] = ["See you again whenever you want to explore this great committee","After that, what do you want to talk about, we can talk about those shiny gems, the mighty Sail'ore or the different committees a pirate can join"]
             if not "predetermined" in self.info["messages"].keys():
