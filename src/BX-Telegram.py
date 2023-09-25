@@ -204,6 +204,7 @@ def main() -> None:
                     # added the question marks cuz people tend to mispell this word
                 ),
                 CommandHandler("request", request),
+                Committees.committees,
                 MessageHandler(filters.TEXT, generic)
             ],
             LORE: [
@@ -214,7 +215,6 @@ def main() -> None:
                 # State of the bot in which it is asked if it wants to continue asking about sailore members
                 CallbackQueryHandler(members.more)
             ],
-            COMMITTEES: Committees.committees,
             REQUEST: [
                 MessageHandler(filters.TEXT, manage_request)
             ],

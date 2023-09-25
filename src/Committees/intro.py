@@ -21,4 +21,4 @@ async def intro(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     time.sleep(1.1)
     await context.bot.send_message(chat_id=update.effective_chat.id,
                                    text="Once you are in remember to use /help to find out what you can do and /exit once you are ready to leave")
-    return COMMITTEES
+    return INITIAL
