@@ -18,4 +18,7 @@ async def intro(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
     time.sleep(1.1)
     await context.bot.send_message(chat_id=update.effective_chat.id, text="To enter a committee section just press the command next to its name")
+    time.sleep(1.1)
+    await context.bot.send_message(chat_id=update.effective_chat.id,
+                                   text="Once you are in remember to use /help to find out what you can do and /exit once you are ready to leave")
     return COMMITTEES
