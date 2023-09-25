@@ -7,11 +7,11 @@
             "Maxime": {"role":  "VPrez"},
             "Gabin": {"role":  "Stock"},
             "Alix": {"role":  "Comms", "message": "Currently writing a message you’ll see in allpromo"},
-            "Klaara": {"role":  "Trez"},
+            "Klaara": {"role":  "Trez", "message":  "Another committee I'm treasurer of"},
             "Anahi": {"role":  "Events"},
             "Johanna": {"role":  "Sked"},
             "Arturo": {"role":  "Bartender", "message": "Thinking about the next cocktail"},
-            "Antoine": {"role":  "Bartender"}
+            "Antoine": {"role":  "Bartender", "message":  "As a bartender, my beers are served cold but my tea always comes hot"}
         },
         "messages": {
             "intro": ["Heyy, welcome to .9, the coolest club on campus 😎", "We are the bachelor’s bar committee, dedicated to serving you delicious drinks", "…although you probably already know us from bachelor parties because, let’s be honest, is it really a party without .9? ;)"],
@@ -50,13 +50,13 @@
     }
     },
     "OnlyGains": {
-        "name": "OnlyGains🏋️🏋️‍♀️🔒",
+        "name": "OnlyGains🔒",
         "command": "/OnlyGains",
         "board": {
             "Maurice Constantin Matar": {"role":  " Co-President", "message": "Yogurt is a superfood"},
             "Sacha Elalouf": {"role":  "Co-President", "message": "Force et honneur"},
             "Hicham": {"role":  "OG Board Member", "message": "Practice Safe Sets😤"},
-            "Etienne Leroy ": {"role":  "Head Coach", "message": "I like to lift 👍🏻"},
+            "Etienne Leroy ": {"role":  "Head Coach", "message": "I like to lift "},
             "Martina": {"role":  "<Girl Rep>", "message": "Manifesting Muscle Mommy✨"},
             "Aminr": {"role":  "Co-Founder"},
             "Alessandro Massaad": {"role":  "Founding Board Member"}
