@@ -26,7 +26,7 @@ class Bar(base.Committee):
     async def menu(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         await self.send_message(update, context, text="This is the current menu")
-        file_path = utils.config.ROOT + '/data/temp_files/menu.jpg'
+        file_path = utils.config.ROOT + '/data/menu.jpg'
         try:
             bx_utils.drive.download_committee_file(self.name, 'menu.jpg', file_path)
             with open(file_path, 'rb') as file:
