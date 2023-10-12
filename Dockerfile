@@ -9,4 +9,4 @@ COPY src/ ./
 
 EXPOSE 80
 
-CMD ["python", "BX-Telegram.py"]
+CMD ["python", "main.py"]
