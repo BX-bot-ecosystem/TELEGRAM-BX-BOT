@@ -34,7 +34,7 @@ from telegram.ext import (
 
 logger = bx_utils.logger(__name__)
 
-INITIAL, LORE, CONTINUE, COMMITTEES, REQUEST, MASTER, MASTER_PASS = range(7)
+INITIAL, LORE, CONTINUE, COMMITTEES, REQUEST, MASTER, MASTER_PASS, ORDER = range(8)
 
 
 def message_wait(message):
@@ -43,6 +43,8 @@ def message_wait(message):
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Start the conversation and ask user for input."""
+    if update.effective_chat.id == -4050559023:
+        return INITIAL #To avoid problems in gcs only made for certain functionalities
     for message in texts["start"]:
         await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
         time.sleep(message_wait(message))
@@ -53,6 +55,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def generic(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Response depending on the message received"""
+    if update.effective_chat.id == -4050559023:
+        return INITIAL #To avoid problems in gcs only made for certain functionalities
     message = update.message.text
     message = message.strip('/')
     keys = texts.keys()
@@ -76,7 +80,29 @@ async def request(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                    text="What do you want to tell the tech support")
     return REQUEST
 
+async def orders(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Allows bartenders to mark orders as ready"""
+    if update.effective_chat.id != -4050559023:
+        return generic(update, context)
+    orders = bx_utils.db.get_committee_info(".9 Bar orders")
+    keyboard = create_keyboard(list(orders.keys()))
+    await context.bot.send_message(chat_id=update.effective_chat.id,
+                                   text="Which order do you want to mark as ready?",
+                                   reply_markup=keyboard)
+    return ORDER
 
+async def process_order(update: Update, context: CallbackContext):
+    orders = bx_utils.db.get_committee_info(".9 Bar orders")
+    query = update.callback_query
+    await query.answer()
+    if query.data == 'Nay':
+        await query.edit_message_text(text='Alright')
+    chat_id = orders[query.data]
+    await context.bot.send_message(chat_id=chat_id,
+                             text="Your order is ready, come to the bar to pick it up")
+    await query.edit_message_text(text="User has been notified")
+    bx_utils.db.delete_committee_info(".9 Bar orders", query.data)
+    return INITIAL
 async def manage_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
     request_made = update.message.text
     await context.bot.send_message(chat_id=update.effective_chat.id,
@@ -194,6 +220,7 @@ def main() -> None:
         states={
             INITIAL: [
                 CommandHandler("master", master),
+                CommandHandler("order", orders),
                 # Initial state of the bot in which it can be asked about gems, the lore and committees
                 Lore.GemHandler.handler,
                 MessageHandler(
@@ -222,6 +249,9 @@ def main() -> None:
             ],
             MASTER_PASS: [
                 CallbackQueryHandler(receive_pass)
+            ],
+            ORDER : [
+                CallbackQueryHandler(process_order)
             ]
         },
         fallbacks=[MessageHandler(filters.TEXT, generic)],

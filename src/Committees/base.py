@@ -18,24 +18,24 @@ import math
 import bx_utils
 import utils
 
-class Activity(enum.Enum):
-    EXIT = -1
-    HOME = 0
-    SUB = 101
-    UNSUB = 102
-    BOARD = 103
-
 class Committee:
+    class Activity(enum.Enum):
+        EXIT = -1
+        HOME = 0
+        SUB = 101
+        UNSUB = 102
+        BOARD = 103
     def __init__(self, name, home_handlers: list | None = None, extra_states: dict | None = None):
         self.name = name
         self.info = utils.config.committees_info[self.name]
         self.board_members = "\n".join([f'{self.info["board"][key]["role"]}: {key}' for key in self.info["board"]])
-        self.board_keyboard = self.create_keyboard()
+        names = [name for name in self.info["board"].keys() if 'message' in self.info["board"][name].keys()]
+        self.board_keyboard = self.create_keyboard(names)
         self.reply_keyboard = [
             [InlineKeyboardButton("Yay", callback_data='Yay'), InlineKeyboardButton("Nay",callback_data='Nay')],
         ]
         self.MARKUP = InlineKeyboardMarkup(self.reply_keyboard)
-        self.state = Activity.HOME
+        self.state = self.Activity.HOME
         if home_handlers is None:
             home_handlers = []
         if "messages" in self.info.keys():
@@ -98,33 +98,7 @@ class Committee:
         for response in text:
             await self.send_message(update, context, response)
         return return_value
-    def create_balanced_layout(self):
-        names = [name for name in self.info["board"].keys() if 'message' in self.info["board"][name].keys()]
-        total_members = len(names)
-        ideal_group_size = math.isqrt(total_members)
-        if names == []:
-            return None
-        remainder = total_members % ideal_group_size
 
-        groups = [names[i:i + ideal_group_size] for i in range(0, total_members - remainder, ideal_group_size)]
-
-        # Distribute the remaining members across the groups
-        for i in range(remainder):
-            groups[i].append(names[total_members - remainder + i])
-
-        return groups
-    def create_keyboard(self):
-        layout = self.create_balanced_layout()
-        if layout is None:
-            return None
-        keyboard = []
-        for name_list in layout:
-            keyboard_row = []
-            for name in name_list:
-                keyboard_row.append(InlineKeyboardButton(name, callback_data=name))
-            keyboard.append(keyboard_row)
-        keyboard.append([InlineKeyboardButton('Nay', callback_data='Nay')])
-        return InlineKeyboardMarkup(keyboard)
     async def board_selection(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         query = update.callback_query
         await query.answer()
@@ -211,3 +185,32 @@ class Committee:
         await context.bot.send_chat_action(chat_id=update.effective_chat.id, action='typing')
         time.sleep(len(text)/140)
         await context.bot.send_message(chat_id=update.effective_chat.id, text=text, parse_mode=parse_mode, reply_markup=reply_markup) 
+
+    @staticmethod
+    def create_balanced_layout(names):
+        total_members = len(names)
+        ideal_group_size = math.isqrt(total_members)
+        if names == []:
+            return None
+        remainder = total_members % ideal_group_size
+
+        groups = [names[i:i + ideal_group_size] for i in range(0, total_members - remainder, ideal_group_size)]
+
+        # Distribute the remaining members across the groups
+        for i in range(remainder):
+            groups[i].append(names[total_members - remainder + i])
+
+        return groups
+
+    def create_keyboard(self, names):
+        layout = self.create_balanced_layout(names)
+        if layout is None:
+            return None
+        keyboard = []
+        for name_list in layout:
+            keyboard_row = []
+            for name in name_list:
+                keyboard_row.append(InlineKeyboardButton(name, callback_data=name))
+            keyboard.append(keyboard_row)
+        keyboard.append([InlineKeyboardButton('Nay', callback_data='Nay')])
+        return InlineKeyboardMarkup(keyboard)
