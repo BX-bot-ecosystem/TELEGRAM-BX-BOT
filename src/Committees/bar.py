@@ -31,15 +31,14 @@ class Bar(base.Committee):
         self.state = self.Activity.HOME
         super().__init__(
             name=".9 Bar",
-            home_handlers=[MessageHandler(filters.Regex(re.compile(r'menu', re.IGNORECASE)), self.menu),
-                           MessageHandler(filters.Regex(re.compile(r'order', re.IGNORECASE)), self.order)],
+            home_handlers=[MessageHandler(filters.Regex(re.compile(r'order', re.IGNORECASE)), self.order),
+                           CommandHandler("order", self.order),
+                           MessageHandler(filters.Regex(re.compile(r'order', re.IGNORECASE)), self.menu)],
             extra_states={self.state.ORDER: [CallbackQueryHandler(self.process_order)]}
         )
         self.order_module = self.OrderingModule(self)
         self.db_info = bx_utils.db.get_committee_info(self.name)
         drinks = ["Shots", "Rainbow Road", "Collective Suicide", "Beer", "Mojito", "Sex on the beach", "Cuba semi libre", "Easy Peasy", "Summer Special", "Manzanade"]
-        orders = ["Blonde Beer", "Red Beer", "5x3 Blonde", "Fefe", "Sex on the beach", "Cuba semi libre"]
-        self.orders_keyboard = self.create_keyboard(orders)
         table_numbers = list(range(18))
         self.tables_keyboard = self.create_keyboard(table_numbers)
         self.drink_keyboard = self.create_keyboard(drinks)
@@ -54,9 +53,6 @@ class Bar(base.Committee):
                 await context.bot.send_photo(chat_id=update.effective_chat.id,
                                              photo=file)
                 os.remove(file_path)
-            await self.send_message(update, context, text="Do you want to learn more about any of our drinks",
-                                    reply_markup=self.drink_keyboard)
-            return self.state.DRINKS
         except googleapiclient.errors.HttpError:
             await context.bot.send_message(chat_id=update.effective_chat.id,
                                            text="We are having problems at the moment, try again later")
