@@ -192,6 +192,7 @@ class Bar(base.Committee):
             elif self.state == self.State.SNACKS:
                 if call_data != 'Nay':
                     self.order.append((call_data, 1))
+                self.state = self.State.CONFIRMATION
                 return True, 'confirmation', self.order
             elif self.state == self.State.CONFIRMATION:
                 self.state = self.State.DRINK
