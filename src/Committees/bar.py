@@ -139,7 +139,7 @@ class Bar(base.Committee):
             elif self.state == self.State.TABLE:
                 self._build_table()
             elif self.state == self.State.SNACKS:
-                self._build_snakcs()
+                self._build_snacks()
             elif self.state == self.State.CONFIRMATION:
                 self._build_confirmation()
 
