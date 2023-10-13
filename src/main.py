@@ -85,6 +85,9 @@ async def orders(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.id != -4050559023:
         return generic(update, context)
     orders = bx_utils.db.get_committee_info(".9 Bar orders")
+    if orders == {}:
+        await context.bot.send_message(chat_id=update.effective_chat.id,
+                                       text="There is no orders at the moment")
     keyboard = create_keyboard(list(orders.keys()))
     await context.bot.send_message(chat_id=update.effective_chat.id,
                                    text="Which order do you want to mark as ready?",
@@ -220,7 +223,7 @@ def main() -> None:
         states={
             INITIAL: [
                 CommandHandler("master", master),
-                CommandHandler("order", orders),
+                CommandHandler("ready", orders),
                 # Initial state of the bot in which it can be asked about gems, the lore and committees
                 Lore.GemHandler.handler,
                 MessageHandler(
