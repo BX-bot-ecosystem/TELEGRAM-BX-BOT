@@ -187,7 +187,7 @@ class Bar(base.Committee):
                     self.state = self.State.DRINK
                     return True, 'drink', None
                 else:
-                    self.state = self.State.CONFIRMATION
+                    self.state = self.State.SNACKS
                     return True, 'snacks', self.order
             elif self.state == self.State.SNACKS:
                 if call_data != 'Nay':
