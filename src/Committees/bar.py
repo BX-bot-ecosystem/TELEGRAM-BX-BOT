@@ -90,6 +90,9 @@ class Bar(base.Committee):
         if stage == 'more':
             await query.edit_message_text('Do you want to order any other drinks?\nYou already have:\n'+ '\n'.join([f'• {drinks[1]} of {drinks[0]}' for drinks in order]), reply_markup=self.order_module.keyboard)
             return self.state.ORDER
+        if stage == 'snacks':
+            await query.edit_message_text('Do you want to add some snacks to your order just for 0.5€', reply_markup=self.order_module.keyboard)
+            return self.state.ORDER
         if stage == 'confirmation':
             order_message = f'Do you confirm your order? \n' + '\n'.join([f'• {drinks[1]} of {drinks[0]}' for drinks in order])
             await query.edit_message_text(order_message, reply_markup=self.order_module.keyboard)
@@ -116,6 +119,7 @@ class Bar(base.Committee):
             MORE = 3
             TABLE = 4
             CONFIRMATION = 5
+            SNACKS = 6
 
         def __init__(self, bar):
             self.order = []  # List of tuples (drink, quantity)
@@ -134,6 +138,8 @@ class Bar(base.Committee):
                 self._build_more()
             elif self.state == self.State.TABLE:
                 self._build_table()
+            elif self.state == self.State.SNACKS:
+                self._build_snakcs()
             elif self.state == self.State.CONFIRMATION:
                 self._build_confirmation()
 
@@ -149,6 +155,10 @@ class Bar(base.Committee):
         def _build_more(self):
             self.keyboard = self.bar.create_keyboard(["Yay"])
 
+        def _build_snacks(self):
+            snacks = bx_utils.db.get_committee_info(".9 Bar")["snacks"]
+            list_snacks = bx_utils.db.db_to_list(snacks)
+            self.keyboard = self.bar.create_keyboard(list_snacks)
         def _build_table(self):
             self.keyboard = self.bar.create_keyboard(list(range(20)))
         def _build_confirmation(self):
@@ -162,6 +172,8 @@ class Bar(base.Committee):
                         return False, 'Not ordered', None
                     self.state = self.State.MORE
                     return True, 'more', self.order
+                if call_data == 'Yay':
+                    return True, 'drink', None
                 self.drink = call_data
                 self.state = self.State.QUANTITY
                 return True, 'quantity', call_data
@@ -176,7 +188,11 @@ class Bar(base.Committee):
                     return True, 'drink', None
                 else:
                     self.state = self.State.CONFIRMATION
-                    return True, 'confirmation', self.order
+                    return True, 'snacks', self.order
+            elif self.state == self.State.SNACKS:
+                if call_data != 'Nay':
+                    self.order.append((call_data, 1))
+                return True, 'confirmation', self.order
             elif self.state == self.State.CONFIRMATION:
                 self.state = self.State.DRINK
                 order = self.order
