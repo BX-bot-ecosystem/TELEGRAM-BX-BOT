@@ -100,6 +100,7 @@ async def process_order(update: Update, context: CallbackContext):
     await query.answer()
     if query.data == 'Nay':
         await query.edit_message_text(text='Alright')
+        return INITIAL
     chat_id = orders[query.data]
     await context.bot.send_message(chat_id=chat_id,
                              text="Your order is ready, come to the bar to pick it up")
