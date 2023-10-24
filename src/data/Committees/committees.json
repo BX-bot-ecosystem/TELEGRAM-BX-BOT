@@ -959,7 +959,7 @@
     },
     "XRefugees": {
         "name": "✨XRefugees✨",
-        "command": "Volunteering",
+        "command": "/volunteering",
         "board": {
             "Kenza Chaabouni": {
                 "role": "President"
