@@ -1,9 +1,9 @@
 from . import base
 
 
-class NeXt(base.Committee):
+class Xrefugees(base.Committee):
     def __init__(self):
         super().__init__(
-            'NeXt'
+            'XRefugees'
         )
 
